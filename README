@@ -1,15 +1,19 @@
 Remotes:
 --------
 linaro-uefi-next => git://git.linaro.org/arm/uefi/uefi-next.git
+tianocore => https://github.com/tianocore/edk2
 
 There is no remote for APM, just unpacked tarballs
 
 
 Branches:
 ---------
-linaro-uefi-next/linaro-release => release branch from Linaro
+linaro-uefi-next/linaro-release => tracking release branch from Linaro
+tianocore => tracking branch from tianocore.org
 
-apm/
+apm/1.10.05-beta_rc => source straight from APM unchanged
 
-master => not really used, but is a merge of everything
+apm => merged Linaro and APM, always most recent
+
+master => not really used
 
