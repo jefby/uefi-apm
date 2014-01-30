@@ -13,7 +13,7 @@ tianocore => tracking branch from tianocore.org
 
 apm/1.10.05-beta_rc => source straight from APM unchanged
 
-apm => merged Linaro and APM, always most recent
+apm/merge => merged Linaro and APM, always most recent
 
 master => not really used
 
