@@ -7,7 +7,7 @@ There is no remote for APM, just unpacked tarballs
 
 Branches:
 ---------
-linaro-uefi-next/linaro-release => tracking branch from Linaro
+linaro-uefi-next/linaro-release => release branch from Linaro
 
 apm/
 
