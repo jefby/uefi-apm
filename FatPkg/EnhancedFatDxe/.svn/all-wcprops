@@ -1,0 +1,137 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/edk2-fatdriver2/!svn/ver/63/trunk/FatPkg/EnhancedFatDxe
+END
+Open.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Open.c
+END
+Delete.c
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Delete.c
+END
+ComponentName.c
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/edk2-fatdriver2/!svn/ver/63/trunk/FatPkg/EnhancedFatDxe/ComponentName.c
+END
+Init.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/edk2-fatdriver2/!svn/ver/55/trunk/FatPkg/EnhancedFatDxe/Init.c
+END
+Fat.inf
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Fat.inf
+END
+Data.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Data.c
+END
+Fat.c
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/edk2-fatdriver2/!svn/ver/55/trunk/FatPkg/EnhancedFatDxe/Fat.c
+END
+DirectoryManage.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/edk2-fatdriver2/!svn/ver/57/trunk/FatPkg/EnhancedFatDxe/DirectoryManage.c
+END
+DiskCache.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/DiskCache.c
+END
+Fat.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Fat.h
+END
+FileName.c
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/edk2-fatdriver2/!svn/ver/58/trunk/FatPkg/EnhancedFatDxe/FileName.c
+END
+Flush.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Flush.c
+END
+Hash.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Hash.c
+END
+FatFileSystem.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/FatFileSystem.h
+END
+Debug.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Debug.c
+END
+ReadWrite.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/ReadWrite.c
+END
+DirectoryCache.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/DirectoryCache.c
+END
+OpenVolume.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/OpenVolume.c
+END
+Info.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Info.c
+END
+FileSpace.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/FileSpace.c
+END
+Misc.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/Misc.c
+END
+UnicodeCollation.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/edk2-fatdriver2/!svn/ver/54/trunk/FatPkg/EnhancedFatDxe/UnicodeCollation.c
+END

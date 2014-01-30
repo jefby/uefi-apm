@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/edk2-fatdriver2/!svn/ver/66/trunk/FatPkg/FatPei
+END
+FatLiteLib.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/edk2-fatdriver2/!svn/ver/62/trunk/FatPkg/FatPei/FatLiteLib.c
+END
+FatLiteApi.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/edk2-fatdriver2/!svn/ver/66/trunk/FatPkg/FatPei/FatLiteApi.c
+END
+FatPei.inf
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svnroot/edk2-fatdriver2/!svn/ver/62/trunk/FatPkg/FatPei/FatPei.inf
+END
+FatLiteFmt.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/edk2-fatdriver2/!svn/ver/62/trunk/FatPkg/FatPei/FatLiteFmt.h
+END
+Part.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svnroot/edk2-fatdriver2/!svn/ver/62/trunk/FatPkg/FatPei/Part.c
+END
+FatLiteApi.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/edk2-fatdriver2/!svn/ver/62/trunk/FatPkg/FatPei/FatLiteApi.h
+END
+FatLitePeim.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svnroot/edk2-fatdriver2/!svn/ver/62/trunk/FatPkg/FatPei/FatLitePeim.h
+END
+FatLiteAccess.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svnroot/edk2-fatdriver2/!svn/ver/66/trunk/FatPkg/FatPei/FatLiteAccess.c
+END
