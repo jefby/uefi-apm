@@ -7,8 +7,9 @@
 *  which accompanies this distribution.  The full text of the license may be found at        
 *  http://opensource.org/licenses/bsd-license.php                                            
 *
-*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
-*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 *
 **/
 
@@ -327,8 +328,10 @@ BdsConnectDevicePath (
     return EFI_INVALID_PARAMETER;
   }
 
+  //For tftp, this sould be here, not in the do { } while
+  Remaining = DevicePath;
   do {
-    Remaining = DevicePath;
+    // Not for tftp, Remaining = DevicePath;
     // The LocateDevicePath() function locates all devices on DevicePath that support Protocol and returns
     // the handle to the device that is closest to DevicePath. On output, the device path pointer is modified
     // to point to the remaining part of the device path
@@ -497,7 +500,7 @@ BdsMemoryMapLoadImage (
     MemMapPathDevicePath = (MEMMAP_DEVICE_PATH*)DevicePath;
   }
 
-  Size = MemMapPathDevicePath->EndingAddress - MemMapPathDevicePath->StartingAddress;
+  Size = MemMapPathDevicePath->EndingAddress - MemMapPathDevicePath->StartingAddress + 1;
   if (Size == 0) {
       return EFI_INVALID_PARAMETER;
   }
@@ -509,6 +512,7 @@ BdsMemoryMapLoadImage (
   }
   if (!EFI_ERROR (Status)) {
     CopyMem ((VOID*)(UINTN)(*Image), (CONST VOID*)(UINTN)MemMapPathDevicePath->StartingAddress, Size);
+    DEBUG((DEBUG_BLKIO, "BdsMemoryMapLoadImage: Load from 0x%p to %p.\n", (CONST VOID*)MemMapPathDevicePath->StartingAddress, (VOID*)(*Image)));
 
     if (ImageSize != NULL) {
         *ImageSize = Size;

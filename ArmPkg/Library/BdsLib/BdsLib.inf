@@ -1,5 +1,5 @@
 #/* @file
-#  
+#
 #  Copyright (c) 2011-2013, ARM Limited. All rights reserved.
 #  
 #  This program and the accompanying materials                          
@@ -7,8 +7,8 @@
 #  which accompanies this distribution.  The full text of the license may be found at        
 #  http://opensource.org/licenses/bsd-license.php                                            
 #
-#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
-#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #
 #*/
 
@@ -26,6 +26,7 @@
   BdsHelper.c
   BdsLoadOption.c
   BdsLinuxFdt.c
+  BdsLinuxUEFI.c
 
 [Sources.ARM]
   Arm/BdsLinuxLoader.c
@@ -62,7 +63,7 @@
   gArmGlobalVariableGuid
 
 [Protocols]
-  gEfiBdsArchProtocolGuid                       
+  gEfiBdsArchProtocolGuid
   gEfiDevicePathProtocolGuid
   gEfiDevicePathFromTextProtocolGuid
   gEfiSimpleFileSystemProtocolGuid
@@ -73,23 +74,26 @@
   gEfiUsbIoProtocolGuid
   gEfiLoadedImageProtocolGuid
   gEfiSimpleNetworkProtocolGuid
-    
+  
 [FeaturePcd]
   gArmTokenSpaceGuid.PcdArmPsciSupport
 
 [FixedPcd]
   gArmTokenSpaceGuid.PcdSystemMemoryBase
   gArmTokenSpaceGuid.PcdSystemMemorySize
+  gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize
 
   gArmTokenSpaceGuid.PcdArmMachineType
   gArmTokenSpaceGuid.PcdArmLinuxFdtMaxOffset
   gArmTokenSpaceGuid.PcdArmLinuxFdtAlignment
   gArmTokenSpaceGuid.PcdArmLinuxKernelMaxOffset
+  gArmTokenSpaceGuid.PcdArmLinuxInitrdMaxOffset
 
 [FixedPcd.ARM]
   gArmTokenSpaceGuid.PcdArmLinuxAtagMaxOffset
 
 [FixedPcd.AARCH64]
+  gArmTokenSpaceGuid.PcdArmLinuxAtagMaxOffset
   gArmTokenSpaceGuid.PcdGicDistributorBase
   gArmTokenSpaceGuid.PcdGicSgiIntId
 

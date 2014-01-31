@@ -155,6 +155,24 @@ BdsBootLinuxFdt (
 
 **/
 EFI_STATUS
+BdsBootLinuxUEFI (
+  IN  EFI_DEVICE_PATH_PROTOCOL* LinuxKernelDevicePath,
+  IN  EFI_DEVICE_PATH_PROTOCOL* InitrdDevicePath,
+  IN  CONST CHAR8*              Arguments
+  );
+
+/**
+  Start an EFI Application from a Device Path
+
+  @param  ParentImageHandle     Handle of the calling image
+  @param  DevicePath            Location of the EFI Application
+
+  @retval EFI_SUCCESS           All drivers have been connected
+  @retval EFI_NOT_FOUND         The Linux kernel Device Path has not been found
+  @retval EFI_OUT_OF_RESOURCES  There is not enough resource memory to store the matching results.
+
+**/
+EFI_STATUS
 BdsStartEfiApplication (
   IN EFI_HANDLE                  ParentImageHandle,
   IN EFI_DEVICE_PATH_PROTOCOL    *DevicePath,

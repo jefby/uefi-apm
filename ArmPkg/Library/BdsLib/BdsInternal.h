@@ -82,6 +82,11 @@ GetSystemMemoryResources (
   LIST_ENTRY *ResourceList
   );
 
+EFI_STATUS
+GetMemmoryMapIOResources (
+  IN  LIST_ENTRY *ResourceList
+  );
+
 VOID
 PrintPerformance (
   VOID

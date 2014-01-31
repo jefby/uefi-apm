@@ -43,9 +43,113 @@ Abstract:
 #include <Library/HobLib.h>
 #include <Library/ArmLib.h>
 
+//
+// Module globals
+//
+
+#define DDR_ATTRIBUTES_CACHED                ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK
+#define DDR_ATTRIBUTES_UNCACHED              ARM_MEMORY_REGION_ATTRIBUTE_UNCACHED_UNBUFFERED
+
+EFI_STATUS
+FindMainMemory (
+  OUT EFI_PHYSICAL_ADDRESS    *PhysicalBase,
+  OUT UINT64    *Length
+  )
+{
+  EFI_PEI_HOB_POINTERS      NextHob;
+
+  // Look at the resource descriptor hobs, choose the first system memory one
+  NextHob.Raw = GetHobList ();
+  while ((NextHob.Raw = GetNextHob (EFI_HOB_TYPE_RESOURCE_DESCRIPTOR, NextHob.Raw)) != NULL) {
+    if(NextHob.ResourceDescriptor->ResourceType == EFI_RESOURCE_SYSTEM_MEMORY)
+    {
+      *PhysicalBase = (EFI_PHYSICAL_ADDRESS)NextHob.ResourceDescriptor->PhysicalStart;
+      *Length = (UINT64)NextHob.ResourceDescriptor->ResourceLength;
+      return EFI_SUCCESS;
+    }
+
+    NextHob.Raw = GET_NEXT_HOB (NextHob);
+  }
+
+  return EFI_NOT_FOUND;
+}
+
+VOID
+ConfigureMmu (
+  VOID
+  )
+{
+  EFI_STATUS                    Status;
+  UINTN                         Idx;
+  UINT32                        CacheAttributes;
+  EFI_PHYSICAL_ADDRESS          SystemMemoryBase;
+  UINT64                        SystemMemoryLength;
+  EFI_PHYSICAL_ADDRESS          SystemMemoryLastAddress;
+  ARM_MEMORY_REGION_DESCRIPTOR  MemoryTable[4];
+  VOID                          *TranslationTableBase;
+  UINTN                         TranslationTableSize;
+
+  if (FeaturePcdGet(PcdCacheEnable) == TRUE) {
+    CacheAttributes = DDR_ATTRIBUTES_CACHED;
+  } else {
+    CacheAttributes = DDR_ATTRIBUTES_UNCACHED;
+  }
+
+  Idx = 0;
+  
+  // Main Memory
+  Status = FindMainMemory (&SystemMemoryBase, &SystemMemoryLength);
+  ASSERT_EFI_ERROR (Status);
+
+  SystemMemoryLastAddress = SystemMemoryBase + (SystemMemoryLength-1);
+
+  // If system memory does not begin at 0
+  if(SystemMemoryBase > 0) {
+    MemoryTable[Idx].PhysicalBase = 0;
+    MemoryTable[Idx].VirtualBase  = 0;
+    MemoryTable[Idx].Length       = SystemMemoryBase;
+    MemoryTable[Idx].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
+    Idx++;
+  }
+
+  MemoryTable[Idx].PhysicalBase = SystemMemoryBase;
+  MemoryTable[Idx].VirtualBase  = SystemMemoryBase;
+  MemoryTable[Idx].Length       = SystemMemoryLength;
+  MemoryTable[Idx].Attributes   = (ARM_MEMORY_REGION_ATTRIBUTES)CacheAttributes;
+  Idx++;
+
+  // If system memory does not go to the last address (0xFFFFFFFF)
+  if( SystemMemoryLastAddress < MAX_ADDRESS ) {
+    MemoryTable[Idx].PhysicalBase = SystemMemoryLastAddress + 1;
+    MemoryTable[Idx].VirtualBase  = MemoryTable[Idx].PhysicalBase;
+    MemoryTable[Idx].Length       = MAX_ADDRESS - MemoryTable[Idx].PhysicalBase + 1;
+    MemoryTable[Idx].Attributes   = ARM_MEMORY_REGION_ATTRIBUTE_DEVICE;
+    Idx++;
+  }
+
+  // End of Table
+  MemoryTable[Idx].PhysicalBase = 0;
+  MemoryTable[Idx].VirtualBase  = 0;
+  MemoryTable[Idx].Length       = 0;
+  MemoryTable[Idx].Attributes   = (ARM_MEMORY_REGION_ATTRIBUTES)0;
+   
+  DEBUG ((EFI_D_INFO, "Enabling MMU, setting 0x%08x + %d MB to %a\n",
+    SystemMemoryBase, SystemMemoryLength/1024/1024,
+    (CacheAttributes == DDR_ATTRIBUTES_CACHED) ? "cacheable" : "uncacheable"));
+
+  Status = ArmConfigureMmu (MemoryTable, &TranslationTableBase, &TranslationTableSize);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((EFI_D_ERROR, "Error: Failed to enable MMU (error code: %r)\n", Status));
+  }
+  
+  BuildMemoryAllocationHob((EFI_PHYSICAL_ADDRESS)(UINTN)TranslationTableBase, TranslationTableSize, EfiBootServicesData);
+}
+
 /*++
 
 Routine Description:
+
+  
 
 Arguments:
 
@@ -68,12 +172,14 @@ InitializeCpuPeim (
   ARM_MP_CORE_INFO_PPI    *ArmMpCoreInfoPpi;
   UINTN                   ArmCoreCount;
   ARM_CORE_INFO           *ArmCoreInfoTable;
-
+  UINTN                   Index;
   // Enable program flow prediction, if supported.
   ArmEnableBranchPrediction ();
 
   // Publish the CPU memory and io spaces sizes
   BuildCpuHob (PcdGet8 (PcdPrePiCpuMemorySize), PcdGet8 (PcdPrePiCpuIoSize));
+
+  //ConfigureMmu();
 
   // Only MP Core platform need to produce gArmMpCoreInfoPpiGuid
   Status = PeiServicesLocatePpi (&gArmMpCoreInfoPpiGuid, 0, NULL, (VOID**)&ArmMpCoreInfoPpi);
@@ -84,6 +190,11 @@ InitializeCpuPeim (
     if (!EFI_ERROR(Status) && (ArmCoreCount > 0)) {
       // Build MPCore Info HOB
       BuildGuidDataHob (&gArmMpCoreInfoGuid, ArmCoreInfoTable, sizeof (ARM_CORE_INFO) * ArmCoreCount);
+    }
+    for (Index =0; Index < ArmCoreCount; Index++) {
+      BuildMemoryAllocationHob((EFI_PHYSICAL_ADDRESS)ArmCoreInfoTable[Index].MailboxGetAddress, 0x1000, EfiBootServicesData);
+      BuildMemoryAllocationHob((EFI_PHYSICAL_ADDRESS)ArmCoreInfoTable[Index].MailboxSetAddress, 0x1000, EfiBootServicesData);
+      BuildMemoryAllocationHob((EFI_PHYSICAL_ADDRESS)ArmCoreInfoTable[Index].MailboxClearAddress, 0x1000, EfiBootServicesData);
     }
   }
 

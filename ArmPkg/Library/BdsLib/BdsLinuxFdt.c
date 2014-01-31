@@ -25,7 +25,7 @@
 #define PALIGN(p, a)    ((void *)(ALIGN((unsigned long)(p), (a))))
 #define GET_CELL(p)     (p += 4, *((const UINT32 *)(p-4)))
 
-STATIC
+STATIC inline
 UINTN
 cpu_to_fdtn (UINTN x) {
   if (sizeof (UINTN) == sizeof (UINT32)) {
@@ -40,6 +40,10 @@ typedef struct {
   UINTN   Size;
 } FdtRegion;
 
+typedef struct __attribute__((packed)) {
+  UINTN   Base;
+  UINT32  Size;
+} FdtRegion32;
 
 STATIC
 UINTN
@@ -297,6 +301,7 @@ RelocateFdt (
     }
   }
 
+  DEBUG ((EFI_D_WARN, "\n", *RelocatedFdt));
   *RelocatedFdtAlloc = *RelocatedFdt;
   if (FdtAlignment != 0) {
     *RelocatedFdt = ALIGN (*RelocatedFdt, FdtAlignment);
@@ -342,6 +347,7 @@ PrepareFdt (
   EFI_PHYSICAL_ADDRESS  InitrdImageStart;
   EFI_PHYSICAL_ADDRESS  InitrdImageEnd;
   FdtRegion             Region;
+  FdtRegion32           Region32;
   UINTN                 Index;
   CHAR8                 Name[10];
   LIST_ENTRY            ResourceList;
@@ -458,21 +464,62 @@ PrepareFdt (
   if (node < 0) {
     // The 'memory' node does not exist, create it
     node = fdt_add_subnode(fdt, 0, "memory");
-    if (node >= 0) {
-      fdt_setprop_string(fdt, node, "name", "memory");
-      fdt_setprop_string(fdt, node, "device_type", "memory");
+  }
+  if (node >= 0) {
+	  int FdtItemLen;
+	  const UINT32 *FdtItem;
+	  UINT64 FdtMemSize;
 
-      GetSystemMemoryResources (&ResourceList);
-      Resource = (BDS_SYSTEM_MEMORY_RESOURCE*)ResourceList.ForwardLink;
 
-      Region.Base = cpu_to_fdtn ((UINTN)Resource->PhysicalStart);
-      Region.Size = cpu_to_fdtn ((UINTN)Resource->ResourceLength);
+	  fdt_setprop_string(fdt, node, "name", "memory");
+	  fdt_setprop_string(fdt, node, "device_type", "memory");
 
-      err = fdt_setprop(fdt, node, "reg", &Region, sizeof(Region));
-      if (err) {
-        DEBUG((EFI_D_ERROR,"Fail to set new 'memory region' (err:%d)\n",err));
-      }
-    }
+	  GetSystemMemoryResources (&ResourceList);
+	  Resource = (BDS_SYSTEM_MEMORY_RESOURCE*)ResourceList.ForwardLink;
+	  FdtItem = (UINT32 *) fdt_getprop(fdt, node, "reg", &FdtItemLen);
+	  if (FdtItemLen == sizeof(UINT32)*3) {
+		  /* Entry size is 3 DWORD - 64-bit base address and 32-bit size.
+		     Update size if entry size is 0. */
+		  FdtMemSize = fdt32_to_cpu(FdtItem[2]);
+		  if (FdtMemSize == 0) {
+			  Region32.Base = cpu_to_fdt64((UINTN)Resource->PhysicalStart);
+			  Region32.Size = cpu_to_fdt32((UINTN)Resource->ResourceLength);
+			  err = fdt_setprop(fdt, node, "reg", &Region32, sizeof(Region32));
+
+		  }
+	  } else if (FdtItemLen == sizeof(UINT32)*4) {
+		  /* Entry size is 4 DWORD - 64-bit base address and 64-bit size.
+		     Update size if entry size is 0. */
+		  FdtMemSize = fdt64_to_cpu(*((UINT64 *) &FdtItem[2]));
+		  if (sizeof(UINTN) == sizeof(UINT32)) {
+			  Region.Base = cpu_to_fdt32((UINTN)Resource->PhysicalStart);
+			  Region.Size = cpu_to_fdt32((UINTN)Resource->ResourceLength);
+		  } else {
+			  Region.Base = cpu_to_fdt64((UINTN)Resource->PhysicalStart);
+			  Region.Size = cpu_to_fdt64((UINTN)Resource->ResourceLength);
+		  }
+
+		  if (FdtMemSize != 0) {
+			  err = fdt_setprop(fdt, node, "reg", &Region, sizeof(Region));
+		  }
+	  } else if (FdtItemLen == 0) {
+		  /* Newly added - just add it */
+		  if (sizeof(UINTN) == sizeof(UINT32)) {
+			  Region.Base = cpu_to_fdt32((UINTN)Resource->PhysicalStart);
+			  Region.Size = cpu_to_fdt32((UINTN)Resource->ResourceLength);
+		  } else {
+			  Region.Base = cpu_to_fdt64((UINTN)Resource->PhysicalStart);
+			  Region.Size = cpu_to_fdt64((UINTN)Resource->ResourceLength);
+		  }
+
+		  Region.Base = cpu_to_fdtn ((UINTN)Resource->PhysicalStart);
+		  Region.Size = cpu_to_fdtn ((UINTN)Resource->ResourceLength);
+
+		  err = fdt_setprop(fdt, node, "reg", &Region, sizeof(Region));
+	  }
+	  if (err) {
+		  DEBUG((EFI_D_ERROR,"Fail to set new 'memory region' (err:%d)\n",err));
+	  }
   }
 
   //

@@ -474,6 +474,7 @@ ArmInstructionSynchronizationBarrier (
   VOID
   );
 
+#if !defined(ARM_CPU_AARCH64)
 VOID
 EFIAPI
 ArmWriteVBar (
@@ -485,6 +486,19 @@ EFIAPI
 ArmReadVBar (
   VOID
   );
+#else
+VOID
+EFIAPI
+ArmWriteVBar (
+  IN  UINT64   VectorBase
+  );
+
+UINT64
+EFIAPI
+ArmReadVBar(
+  VOID
+  );
+#endif
 
 VOID
 EFIAPI
@@ -551,6 +565,18 @@ VOID
 EFIAPI
 ArmEnableVFP (
   VOID
+  );
+
+UINT32
+EFIAPI
+ArmReadNsacr (
+  VOID
+  );
+
+VOID
+EFIAPI
+ArmWriteNsacr (
+  IN  UINT32   SetWayFormat
   );
 
 UINT32

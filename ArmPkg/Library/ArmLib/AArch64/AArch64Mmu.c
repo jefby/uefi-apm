@@ -519,6 +519,16 @@ ArmConfigureMmu (
 
   ASSERT (MemoryTable != NULL);
 
+
+  // Disable MMU and caches. ArmDisableMmu() also invalidates the TLBs
+  ArmDisableMmu ();
+  ArmDisableDataCache ();
+  ArmDisableInstructionCache ();
+
+  // Make sure nothing sneaked into the cache
+  ArmCleanInvalidateDataCache ();
+  ArmInvalidateInstructionCache ();
+
   // Identify the highest address of the memory table
   MaxAddress = MemoryTable->PhysicalBase + MemoryTable->Length - 1;
   MemoryTableEntry = MemoryTable;
@@ -610,15 +620,6 @@ ArmConfigureMmu (
   }
 
   ZeroMem (TranslationTable, RootTableEntryCount * sizeof(UINT64));
-
-  // Disable MMU and caches. ArmDisableMmu() also invalidates the TLBs
-  ArmDisableMmu ();
-  ArmDisableDataCache ();
-  ArmDisableInstructionCache ();
-
-  // Make sure nothing sneaked into the cache
-  ArmCleanInvalidateDataCache ();
-  ArmInvalidateInstructionCache ();
 
   TranslationTableAttribute = TT_ATTR_INDX_INVALID;
   while (MemoryTable->Length != 0) {

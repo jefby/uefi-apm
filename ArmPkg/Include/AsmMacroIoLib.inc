@@ -79,7 +79,7 @@
   LoadConstantToRegMacro $Data, $Reg 
   ldr  $Reg, =($Data) 
   MEND 
-  
+
   ; The reserved place must be 8-bytes aligned for pushing 64-bit variable on the stack
   ; Note: Global Size will be modified
   MACRO

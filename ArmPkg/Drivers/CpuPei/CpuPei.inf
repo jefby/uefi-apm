@@ -53,6 +53,9 @@
   gEmbeddedTokenSpaceGuid.PcdPrePiCpuMemorySize
   gEmbeddedTokenSpaceGuid.PcdPrePiCpuIoSize
 
-[Depex]
+[FeaturePcd]  
+  gEmbeddedTokenSpaceGuid.PcdCacheEnable  
+
+[depex]
   gEfiPeiMemoryDiscoveredPpiGuid
   
