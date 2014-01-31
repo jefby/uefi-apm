@@ -16,6 +16,7 @@
 
 #include <Library/PcdLib.h>
 #include <Library/PerformanceLib.h>
+#include <Library/ArmPlatformLib.h>
 
 #include <Protocol/Bds.h>
 
@@ -264,9 +265,48 @@ DefineDefaultBootEntries (
 
     // Create the entry is the Default values are correct
     if (BootDevicePath != NULL) {
+      CHAR16 BootDescription[128];
+
       BootType = (ARM_BDS_LOADER_TYPE)PcdGet32 (PcdDefaultBootType);
 
-      if ((BootType == BDS_LOADER_KERNEL_LINUX_ATAG) || (BootType == BDS_LOADER_KERNEL_LINUX_GLOBAL_FDT) || (BootType == BDS_LOADER_KERNEL_LINUX_LOCAL_FDT)) {
+      /* Create an entry for Linux UEFI */
+      if ((BootType == BDS_LOADER_KERNEL_LINUX_ATAG) ||
+          (BootType == BDS_LOADER_KERNEL_LINUX_GLOBAL_FDT) ||
+          (BootType == BDS_LOADER_KERNEL_LINUX_LOCAL_FDT) ||
+          (BootType == BDS_LOADER_KERNEL_LINUX_UEFI)) {
+        CmdLineSize = AsciiStrSize ((CHAR8*)PcdGetPtr(PcdDefaultBootArgument));
+        InitrdPath = EfiDevicePathFromTextProtocol->ConvertTextToDevicePath ((CHAR16*)PcdGetPtr(PcdDefaultBootInitrdPath));
+        if (InitrdPath != NULL) {
+          InitrdSize = GetDevicePathSize (InitrdPath);
+        } else {
+          InitrdSize = 0;
+        }
+        BootArguments = (ARM_BDS_LOADER_ARGUMENTS*)AllocatePool (sizeof(ARM_BDS_LOADER_ARGUMENTS) + CmdLineSize + InitrdSize);
+        BootArguments->LinuxArguments.CmdLineSize = CmdLineSize;
+        BootArguments->LinuxArguments.InitrdSize = InitrdSize;
+        CopyMem ((VOID*)(BootArguments + 1), (CHAR8*)PcdGetPtr(PcdDefaultBootArgument), CmdLineSize+1);
+        CopyMem ((VOID*)((EFI_PHYSICAL_ADDRESS)(BootArguments + 1) + CmdLineSize), InitrdPath, InitrdSize);
+      } else {
+         BootArguments = NULL;
+      }
+      UnicodeSPrint(BootDescription, sizeof(BootDescription),
+               L"UEFI %s", (CHAR16 *) PcdGetPtr(PcdDefaultBootDescription));
+      BootOptionCreate (LOAD_OPTION_ACTIVE | LOAD_OPTION_CATEGORY_BOOT,
+        BootDescription,
+        BootDevicePath,
+        BDS_LOADER_KERNEL_LINUX_UEFI,
+        BootArguments,
+        &BdsLoadOption
+        );
+      if (BdsLoadOption != NULL){
+        FreePool (BdsLoadOption);
+      }
+
+      /* Create an entry for Linux FDT */
+      if ((BootType == BDS_LOADER_KERNEL_LINUX_ATAG) ||
+          (BootType == BDS_LOADER_KERNEL_LINUX_GLOBAL_FDT) ||
+          (BootType == BDS_LOADER_KERNEL_LINUX_LOCAL_FDT) ||
+          (BootType == BDS_LOADER_KERNEL_LINUX_UEFI)) {
         CmdLineSize = AsciiStrSize ((CHAR8*)PcdGetPtr(PcdDefaultBootArgument));
         InitrdPath = EfiDevicePathFromTextProtocol->ConvertTextToDevicePath ((CHAR16*)PcdGetPtr(PcdDefaultBootInitrdPath));
         if (InitrdPath != NULL) {
@@ -281,7 +321,6 @@ DefineDefaultBootEntries (
           FdtLocalPath = NULL;
           FdtLocalSize = 0;
         }
-
         BootArguments = (ARM_BDS_LOADER_ARGUMENTS*)AllocatePool (sizeof(ARM_BDS_LOADER_ARGUMENTS) + CmdLineSize + InitrdSize + FdtLocalSize);
         if ( BootArguments != NULL ) {
           BootArguments->LinuxArguments.CmdLineSize = CmdLineSize;
@@ -424,6 +463,9 @@ BdsEntry (
   UINTN               BootNextSize;
   CHAR16              BootVariableName[9];
 
+
+  DEBUG((EFI_D_VERBOSE, "Setup boot device selction...\n"));
+
   PERF_END   (NULL, "DXE", NULL, 0);
 
   //
@@ -464,6 +506,7 @@ BdsEntry (
     if (Status != EFI_NOT_FOUND) {
       // BootNext has not been succeeded launched
       if (EFI_ERROR(Status)) {
+        DEBUG((EFI_D_ERROR, "Fail to start BootNext.\n"));
         Print(L"Fail to start BootNext.\n");
       }
 
@@ -480,10 +523,14 @@ BdsEntry (
   }
 
   // If Boot Order does not exist then create a default entry
+  DEBUG((EFI_D_VERBOSE, "Install default boot entries\n"));
   DefineDefaultBootEntries ();
 
   // Now we need to setup the EFI System Table with information about the console devices.
   InitializeConsole ();
+
+  // Show banner
+  ArmPlatformShowBoardBanner (Print);
 
   //
   // Update the CRC32 in the EFI System Table header

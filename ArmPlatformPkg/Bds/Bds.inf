@@ -47,7 +47,8 @@
   DebugLib
   PrintLib
   BaseLib
-
+  ArmPlatformLib
+  
 [Guids]
   gEfiFileSystemInfoGuid
   gArmGlobalVariableGuid

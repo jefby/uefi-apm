@@ -26,6 +26,7 @@
   IMPORT  ArmPlatformGetPrimaryCoreMpId
 
   IMPORT  _gPcd_FixedAtBuild_PcdCoreCount
+  IMPORT  _gPcd_FixedAtBuild_PcdArmPrimaryCore
 
   PRESERVE8
   AREA    ArmPlatformStackLib, CODE, READONLY

@@ -34,7 +34,7 @@ InitMmu (
   VOID                          *TranslationTableBase;
   UINTN                         TranslationTableSize;
   RETURN_STATUS                 Status;
-
+  UINTN                         Index;
   // Get Virtual Memory Map from the Platform Library
   ArmPlatformGetVirtualMemoryMap (&MemoryTable);
 
@@ -43,6 +43,22 @@ InitMmu (
   Status = ArmConfigureMmu (MemoryTable, &TranslationTableBase, &TranslationTableSize);
   if (EFI_ERROR (Status)) {
     DEBUG ((EFI_D_ERROR, "Error: Failed to enable MMU\n"));
+  }
+
+  BuildMemoryAllocationHob((EFI_PHYSICAL_ADDRESS)(UINTN)TranslationTableBase, EFI_SIZE_TO_PAGES(TranslationTableSize) * EFI_PAGE_SIZE, EfiBootServicesData);
+
+  Index = 0;
+  while (MemoryTable[Index].Length != 0) {
+    if (MemoryTable[Index].Attributes == ARM_MEMORY_REGION_ATTRIBUTE_DEVICE) {
+      BuildResourceDescriptorHob (
+          EFI_RESOURCE_MEMORY_MAPPED_IO,
+          EFI_RESOURCE_ATTRIBUTE_PRESENT     |
+          EFI_RESOURCE_ATTRIBUTE_INITIALIZED,
+          MemoryTable[Index].PhysicalBase,
+          MemoryTable[Index].Length
+          );
+    }
+    Index++;
   }
 }
 
@@ -161,7 +177,7 @@ MemoryPeim (
 
     ASSERT(Found);
   }
-
+  DEBUG ((EFI_D_ERROR, "PcdSystemMemorySize:%llx\n", PcdGet64 (PcdSystemMemorySize)));
   // Build Memory Allocation Hob
   InitMmu ();
 

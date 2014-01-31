@@ -133,6 +133,7 @@ InitializeDisplay (
   // Setup all the relevant mode information
   Instance->Gop.Mode->SizeOfInfo      = sizeof(EFI_GRAPHICS_OUTPUT_MODE_INFORMATION);
   Instance->Gop.Mode->FrameBufferBase = VramBaseAddress;
+  Instance->Gop.Mode->FrameBufferSize = VramSize;
 
   // Set the flag before changing the mode, to avoid infinite loops
   mDisplayInitialized = TRUE;

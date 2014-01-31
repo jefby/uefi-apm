@@ -271,7 +271,7 @@ BootDeviceGetType (
     } else if (StrCmp(FDTType, L"a") == 0) {
       *BootType = BDS_LOADER_KERNEL_LINUX_ATAG;
     } else {
-      return EFI_ABORTED;
+      *BootType = BDS_LOADER_KERNEL_LINUX_UEFI; /* FIXME - LHO */
     }
   }
 
@@ -399,7 +399,7 @@ BdsLoadOptionFileSystemUpdateDevicePath (
   DevicePath = DuplicateDevicePath (OldDevicePath);
 
   EndingDevicePath = (FILEPATH_DEVICE_PATH*)GetLastDevicePathNode (DevicePath);
- 
+
   Print(L"File path of the %s: ", FileName);
   StrnCpy (BootFilePath, EndingDevicePath->PathName, BOOT_DEVICE_FILEPATH_MAX);
   Status = EditHIInputStr (BootFilePath, BOOT_DEVICE_FILEPATH_MAX);

@@ -1,6 +1,6 @@
 /*++ @file  NorFlashFvbDxe.c
 
- Copyright (c) 2011-201333, ARM Ltd. All rights reserved.<BR>
+ Copyright (c) 2011-2013, ARM Ltd. All rights reserved.<BR>
 
  This program and the accompanying materials
  are licensed and made available under the terms and conditions of the BSD License
@@ -21,12 +21,26 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/UefiBootServicesTableLib.h>
+#include <Library/DxeServicesTableLib.h>
+#include <Library/UefiRuntimeLib.h>
 
 #include <Guid/VariableFormat.h>
 #include <Guid/SystemNvDataGuid.h>
 
 #include "NorFlashDxe.h"
 
+#include <ArmPlatform.h>
+
+extern VOID *TmpRuntimeBuffer;
+
+EFI_STATUS
+EFIAPI
+FvbRead (
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL   *This,
+  IN        EFI_LBA                               Lba,
+  IN        UINTN                                 Offset,
+  IN OUT    UINTN                                 *NumBytes,
+  IN OUT    UINT8                                 *Buffer);
 
 ///
 /// The Firmware Volume Block Protocol is the low-level interface
@@ -102,7 +116,8 @@ InitializeFvAndVariableStoreHeaders (
   FirmwareVolumeHeader->BlockMap[0].Length      = Instance->Media.BlockSize;
   FirmwareVolumeHeader->BlockMap[1].NumBlocks = 0;
   FirmwareVolumeHeader->BlockMap[1].Length      = 0;
-  FirmwareVolumeHeader->Checksum = CalculateCheckSum16 ((UINT16*)FirmwareVolumeHeader,FirmwareVolumeHeader->HeaderLength);
+  FirmwareVolumeHeader->Checksum = CalculateCheckSum16 ((UINT16*)FirmwareVolumeHeader,
+		  	  	  FirmwareVolumeHeader->HeaderLength);
 
   //
   // VARIABLE_STORE_HEADER
@@ -138,9 +153,29 @@ ValidateFvHeader (
   EFI_FIRMWARE_VOLUME_HEADER  *FwVolHeader;
   VARIABLE_STORE_HEADER       *VariableStoreHeader;
   UINTN                       VariableStoreLength;
-  UINTN						  FvLength;
+  UINTN			      FvLength;
+  UINT8                       *Buffer;
+  UINTN                       NumRead;
+  UINTN 		      TotalRead;
 
-  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER*)Instance->RegionBaseAddress;
+  TotalRead = sizeof (EFI_FIRMWARE_VOLUME_HEADER)  + sizeof(EFI_FV_BLOCK_MAP_ENTRY) +
+		  sizeof(VARIABLE_STORE_HEADER);
+  NumRead = TotalRead;
+  if (NumRead > MAX_RUNTIME_BUFFER_SIZE) {
+    DEBUG ((EFI_D_ERROR, "ValidateFvHeader: Out of resource\n"));
+    goto ERROR;
+  }
+  Buffer = TmpRuntimeBuffer;
+
+  FvbRead (&Instance->FvbProtocol, (EFI_LBA)0,
+		  	  	  0, &NumRead, Buffer);
+
+  if (NumRead != TotalRead) {
+      DEBUG ((EFI_D_ERROR, "ValidateFvHeader: Read Firmware Volume header failed\n"));
+      goto ERROR;
+  }
+
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER*)Buffer;
 
   FvLength = PcdGet32(PcdFlashNvStorageVariableSize) + PcdGet32(PcdFlashNvStorageFtwWorkingSize) +
       PcdGet32(PcdFlashNvStorageFtwSpareSize);
@@ -155,21 +190,20 @@ ValidateFvHeader (
       || (FwVolHeader->FvLength  != FvLength)
       )
   {
-    DEBUG ((EFI_D_ERROR, "ValidateFvHeader: No Firmware Volume header present\n"));
-    return EFI_NOT_FOUND;
+    goto ERROR;
   }
 
   // Check the Firmware Volume Guid
   if( CompareGuid (&FwVolHeader->FileSystemGuid, &gEfiSystemNvDataFvGuid) == FALSE ) {
     DEBUG ((EFI_D_ERROR, "ValidateFvHeader: Firmware Volume Guid non-compatible\n"));
-    return EFI_NOT_FOUND;
+    goto ERROR;
   }
 
   // Verify the header checksum
   Checksum = CalculateSum16((UINT16*)FwVolHeader, FwVolHeader->HeaderLength);
   if (Checksum != 0) {
     DEBUG ((EFI_D_ERROR, "ValidateFvHeader: FV checksum is invalid (Checksum:0x%X)\n",Checksum));
-    return EFI_NOT_FOUND;
+    goto ERROR;
   }
 
   VariableStoreHeader = (VARIABLE_STORE_HEADER*)((UINTN)FwVolHeader + FwVolHeader->HeaderLength);
@@ -177,16 +211,20 @@ ValidateFvHeader (
   // Check the Variable Store Guid
   if( CompareGuid (&VariableStoreHeader->Signature, &gEfiVariableGuid) == FALSE ) {
     DEBUG ((EFI_D_ERROR, "ValidateFvHeader: Variable Store Guid non-compatible\n"));
-    return EFI_NOT_FOUND;
+    goto ERROR;
   }
 
   VariableStoreLength = PcdGet32 (PcdFlashNvStorageVariableSize) - FwVolHeader->HeaderLength;
   if (VariableStoreHeader->Size != VariableStoreLength) {
     DEBUG ((EFI_D_ERROR, "ValidateFvHeader: Variable Store Length does not match\n"));
-    return EFI_NOT_FOUND;
+    goto ERROR;
   }
 
   return EFI_SUCCESS;
+
+ERROR:
+  return EFI_NOT_FOUND;
+
 }
 
 /**
@@ -293,15 +331,44 @@ FvbGetPhysicalAddress (
   OUT       EFI_PHYSICAL_ADDRESS                 *Address
   )
 {
-  NOR_FLASH_INSTANCE *Instance;
-
-  Instance = INSTANCE_FROM_FVB_THIS(This);
-
-  DEBUG ((DEBUG_BLKIO, "FvbGetPhysicalAddress(BaseAddress=0x%08x)\n", Instance->RegionBaseAddress));
-
-  ASSERT(Address != NULL);
+  ASSERT(Address);
 
   *Address = PcdGet32 (PcdFlashNvStorageVariableBase);
+
+  DEBUG ((DEBUG_BLKIO, "FvbGetPhysicalAddress(BaseAddress=0x%x)\n", *Address));
+  return EFI_SUCCESS;
+}
+
+/**
+  The GetMappedAddress() function retrieves the mapped address of
+  firmware volume. .
+
+  @param This     Indicates the EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL instance.
+
+  @param Address  Pointer to mapped address of
+                  base address of the firmware volume.
+
+  @retval EFI_SUCCESS       The firmware volume base address was returned.
+
+  @retval EFI_UNSUPPORTED   The firmware volume is not memory mapped.
+
+**/
+EFI_STATUS
+EFIAPI
+FvbGetMappedAddress(
+  IN CONST  EFI_FIRMWARE_VOLUME_BLOCK2_PROTOCOL *This,
+  OUT       EFI_PHYSICAL_ADDRESS                *Address
+)
+{
+  NOR_FLASH_INSTANCE *Instance;
+  //DEBUG ((DEBUG_BLKIO, "FvbGetMappedAddress enter\n"));
+  Instance = INSTANCE_FROM_FVB_THIS(This);
+
+  //ASSERT(Address != NULL);
+
+  *Address = Instance->PhysicalAddress;
+
+  //DEBUG ((DEBUG_VERBOSE, "FvbGetMappedAddress(BaseAddress=0x%x)\n", *Address));
   return EFI_SUCCESS;
 }
 
@@ -418,6 +485,9 @@ FvbRead (
   EFI_STATUS    TempStatus;
   UINTN         BlockSize;
   UINT8         *BlockBuffer;
+  UINT32        Tmp;
+  UINT32        ChunkSize;
+
   NOR_FLASH_INSTANCE *Instance;
 
   Instance = INSTANCE_FROM_FVB_THIS(This);
@@ -434,6 +504,7 @@ FvbRead (
   // Cache the block size to avoid de-referencing pointers all the time
   BlockSize = Instance->Media.BlockSize;
 
+#ifdef APM_XGENE_GFC_FLASH
   DEBUG ((DEBUG_BLKIO, "FvbRead: Check if (Offset=0x%x + NumBytes=0x%x) <= BlockSize=0x%x\n", Offset, *NumBytes, BlockSize ));
 
   // The read must not span block boundaries.
@@ -444,6 +515,7 @@ FvbRead (
     DEBUG ((EFI_D_ERROR, "FvbRead: ERROR - EFI_BAD_BUFFER_SIZE: (Offset=0x%x + NumBytes=0x%x) > BlockSize=0x%x\n", Offset, *NumBytes, BlockSize ));
     return EFI_BAD_BUFFER_SIZE;
   }
+#endif
 
   // We must have some bytes to read
   if (*NumBytes == 0) {
@@ -453,7 +525,12 @@ FvbRead (
   // FixMe: Allow an arbitrary number of bytes to be read out, not just a multiple of block size.
 
   // Allocate runtime memory to read in the NOR Flash data. Variable Services are runtime.
-  BlockBuffer = AllocateRuntimePool (BlockSize);
+  if (BlockSize > MAX_RUNTIME_BUFFER_SIZE) {
+    DEBUG ((EFI_D_ERROR, "FvbRead: Out of resource\n"));
+    Status = EFI_DEVICE_ERROR;
+    goto FREE_MEMORY;
+  }
+  BlockBuffer =TmpRuntimeBuffer;
 
   // Check if the memory allocation was successful
   if (BlockBuffer == NULL) {
@@ -461,8 +538,10 @@ FvbRead (
     return EFI_DEVICE_ERROR;
   }
 
-  // Read NOR Flash data into shadow buffer
-  TempStatus = NorFlashReadBlocks (Instance, Instance->StartLba + Lba, BlockSize, BlockBuffer);
+  for (Tmp = 0; Tmp < *NumBytes; Tmp += ChunkSize) {
+    ChunkSize = MIN(BlockSize - Offset, *NumBytes - Tmp);
+    // Read NOR Flash data into shadow buffer
+    TempStatus = NorFlashReadBlocks (Instance, Instance->StartLba + Lba + Tmp/BlockSize , BlockSize, BlockBuffer);
   if (EFI_ERROR (TempStatus)) {
     // Return one of the pre-approved error statuses
     Status = EFI_DEVICE_ERROR;
@@ -470,12 +549,12 @@ FvbRead (
   }
 
   // Put the data at the appropriate location inside the buffer area
-  DEBUG ((DEBUG_BLKIO, "FvbRead: CopyMem( Dst=0x%08x, Src=0x%08x, Size=0x%x ).\n", Buffer, BlockBuffer + Offset, *NumBytes));
-
-  CopyMem(Buffer, BlockBuffer + Offset, *NumBytes);
+    CopyMem(Buffer + Tmp, (BlockBuffer + Offset), ChunkSize);
+    Offset = 0;
+  }
 
 FREE_MEMORY:
-  FreePool(BlockBuffer);
+//FreePool(BlockBuffer);
   return Status;
 }
 
@@ -547,6 +626,9 @@ FvbWrite (
   EFI_STATUS  TempStatus;
   UINTN       BlockSize;
   UINT8       *BlockBuffer;
+  UINT32      Tmp;
+  UINT32      ChunkSize;
+
   NOR_FLASH_INSTANCE *Instance;
 
   Instance = INSTANCE_FROM_FVB_THIS(This);
@@ -570,6 +652,7 @@ FvbWrite (
   // Cache the block size to avoid de-referencing pointers all the time
   BlockSize = Instance->Media.BlockSize;
 
+#ifdef APM_XGENE_GFC_FLASH
   // The write must not span block boundaries.
   // We need to check each variable individually because adding two large values together overflows.
   if ( ( Offset               >= BlockSize ) ||
@@ -578,6 +661,7 @@ FvbWrite (
     DEBUG ((EFI_D_ERROR, "FvbWrite: ERROR - EFI_BAD_BUFFER_SIZE: (Offset=0x%x + NumBytes=0x%x) > BlockSize=0x%x\n", Offset, *NumBytes, BlockSize ));
     return EFI_BAD_BUFFER_SIZE;
   }
+#endif
 
   // We must have some bytes to write
   if (*NumBytes == 0) {
@@ -588,7 +672,12 @@ FvbWrite (
   // Allocate runtime memory to read in the NOR Flash data.
   // Since the intention is to use this with Variable Services and since these are runtime,
   // allocate the memory from the runtime pool.
-  BlockBuffer = AllocateRuntimePool (BlockSize);
+  if (BlockSize > MAX_RUNTIME_BUFFER_SIZE) {
+    DEBUG ((EFI_D_ERROR, "FvbWrite: Out of resource\n"));
+    Status = EFI_DEVICE_ERROR;
+    goto FREE_MEMORY;
+  }
+  BlockBuffer = TmpRuntimeBuffer;
 
   // Check we did get some memory
   if( BlockBuffer == NULL ) {
@@ -596,27 +685,34 @@ FvbWrite (
     return EFI_DEVICE_ERROR;
   }
 
-  // Read NOR Flash data into shadow buffer
-  TempStatus = NorFlashReadBlocks (Instance, Instance->StartLba + Lba, BlockSize, BlockBuffer);
-  if (EFI_ERROR (TempStatus)) {
-    // Return one of the pre-approved error statuses
-    Status = EFI_DEVICE_ERROR;
-    goto FREE_MEMORY;
-  }
+  for (Tmp = 0; Tmp < *NumBytes; Tmp += ChunkSize) {
+	  ChunkSize = MIN(BlockSize - Offset, *NumBytes - Tmp);
+	  if (ChunkSize < BlockSize) {
+		  // Read NOR Flash data into shadow buffer
+		  TempStatus = NorFlashReadBlocks (Instance, Instance->StartLba + Lba + Tmp/BlockSize , BlockSize, BlockBuffer);
+		  if (EFI_ERROR (TempStatus)) {
+			  // Return one of the pre-approved error statuses
+			  Status = EFI_DEVICE_ERROR;
+			  goto FREE_MEMORY;
+		  }
+	  }
 
-  // Put the data at the appropriate location inside the buffer area
-  CopyMem((BlockBuffer + Offset), Buffer, *NumBytes);
+	  // Put the data at the appropriate location inside the buffer area
+	  CopyMem((BlockBuffer + Offset), Buffer + Tmp, ChunkSize);
 
-  // Write the modified buffer back to the NorFlash
-  TempStatus = NorFlashWriteBlocks (Instance, Instance->StartLba + Lba, BlockSize, BlockBuffer);
-  if (EFI_ERROR (TempStatus)) {
-    // Return one of the pre-approved error statuses
-    Status = EFI_DEVICE_ERROR;
-    goto FREE_MEMORY;
+	  // Write the modified buffer back to the NorFlash
+	  Status = NorFlashWriteBlocks (Instance, Instance->StartLba + Lba + Tmp/BlockSize, BlockSize, BlockBuffer);
+	  if (EFI_ERROR (TempStatus)) {
+		  // Return one of the pre-approved error statuses
+		  Status = EFI_DEVICE_ERROR;
+		  goto FREE_MEMORY;
+	  }
+	  Offset = 0;
+
   }
 
 FREE_MEMORY:
-  FreePool(BlockBuffer);
+  //FreePool(BlockBuffer);
   return Status;
 }
 
@@ -772,14 +868,29 @@ NorFlashFvbInitialize (
 {
   EFI_STATUS  Status;
   UINT32      FvbNumLba;
+#ifdef APM_XGENE_SPI_FLASH
+  UINTN       ReadSize;
+#endif
   EFI_BOOT_MODE BootMode;
 
   DEBUG((DEBUG_BLKIO,"NorFlashFvbInitialize\n"));
 
   Instance->Initialized = TRUE;
+#ifdef APM_XGENE_SPI_FLASH
+  ReadSize = PcdGet32(PcdFlashNvStorageVariableSize) + PcdGet32(PcdFlashNvStorageFtwWorkingSize) + PcdGet32(PcdFlashNvStorageFtwSpareSize);
+  Instance->PhysicalAddress = (EFI_PHYSICAL_ADDRESS) AllocateRuntimePool(ReadSize);
+  DEBUG((DEBUG_BLKIO,"PhysicalAddress:0x%p\n", (VOID *)Instance->PhysicalAddress));
+  if (Instance->PhysicalAddress == 0) {
+    DEBUG((DEBUG_BLKIO,"Out of memory\n"));
+    return EFI_INVALID_PARAMETER;
+  }
+#else
+  Instance->PhysicalAddress = PcdGet32 (PcdFlashNvStorageVariableBase);
+#endif
 
   // Set the index of the first LBA for the FVB
   Instance->StartLba = (PcdGet32 (PcdFlashNvStorageVariableBase) - Instance->RegionBaseAddress) / Instance->Media.BlockSize;
+  DEBUG((DEBUG_BLKIO,"StartLba:%d %x %x\n", Instance->StartLba, PcdGet32 (PcdFlashNvStorageVariableBase), Instance->RegionBaseAddress));
 
   BootMode = GetBootModeHob ();
   if (BootMode == BOOT_WITH_DEFAULT_SETTINGS) {
@@ -789,7 +900,7 @@ NorFlashFvbInitialize (
     Status = ValidateFvHeader (Instance);
   }
 
-  // Install the Default FVB header if required  
+  // Install the Default FVB header if required
   if (EFI_ERROR(Status)) {
     // There is no valid header, so time to install one.
     DEBUG((EFI_D_ERROR,"NorFlashFvbInitialize: ERROR - The FVB Header is not valid. Installing a correct one for this volume.\n"));
@@ -808,5 +919,15 @@ NorFlashFvbInitialize (
       return Status;
     }
   }
+  DEBUG((DEBUG_BLKIO,"Store StorageVariable\n"));
+
+#ifdef APM_XGENE_SPI_FLASH
+  // Store Storage Variable region for later use */
+  Status = FvbRead (&Instance->FvbProtocol, 0, 0, &ReadSize, (VOID *)Instance->PhysicalAddress);
+  if (EFI_ERROR(Status)) {
+    return Status;
+  }
+#endif
+
   return Status;
 }

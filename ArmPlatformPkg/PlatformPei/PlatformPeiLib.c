@@ -24,7 +24,6 @@ PlatformPeim (
   VOID
   )
 {
-  BuildFvHob (PcdGet32(PcdFvBaseAddress), PcdGet32(PcdFvSize));
-
+  BuildFvHob (PcdGet64(PcdFvBaseAddress), PcdGet32(PcdFvSize));
   return EFI_SUCCESS;
 }
