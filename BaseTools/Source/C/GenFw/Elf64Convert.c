@@ -504,6 +504,255 @@ ScanSections64 (
 
 }
 
+#if defined(ENABLE_AARCH64_RELOCATION_SUPPORT)
+/**
+ * AARCH64
+ */
+typedef UINT64 u64;
+typedef UINT32 u32;
+typedef INT64 s64;
+typedef INT32 s32;
+typedef INT16 s16;
+#define ERANGE	34
+#define BIT(nr)                    (1ULL << (nr))
+
+enum aarch64_reloc_op {
+	RELOC_OP_NONE,
+	RELOC_OP_ABS,
+	RELOC_OP_PREL,
+	RELOC_OP_PAGE,
+};
+
+static u64 do_reloc(enum aarch64_reloc_op reloc_op, u64 place, u64 val)
+{
+	switch (reloc_op) {
+	case RELOC_OP_ABS:
+		return val;
+	case RELOC_OP_PREL:
+		return val - place;
+	case RELOC_OP_PAGE:
+		return (val & ~0xfff) - (place & ~0xfff);
+	case RELOC_OP_NONE:
+		return 0;
+	}
+
+        Error(NULL, 0, 3000, "Invalid",
+              "do_reloc: unknown relocation operation %d\n", reloc_op);
+	return 0;
+}
+
+enum aarch64_imm_type {
+	INSN_IMM_MOVNZ,
+	INSN_IMM_MOVK,
+	INSN_IMM_ADR,
+	INSN_IMM_26,
+	INSN_IMM_19,
+	INSN_IMM_16,
+	INSN_IMM_14,
+	INSN_IMM_12,
+	INSN_IMM_9,
+};
+
+static u32 encode_insn_immediate(enum aarch64_imm_type type, u32 insn, u64 imm)
+{
+	u32 immlo, immhi, lomask, himask, mask;
+	int shift;
+
+	switch (type) {
+	case INSN_IMM_MOVNZ:
+		/*
+		 * For signed MOVW relocations, we have to manipulate the
+		 * instruction encoding depending on whether or not the
+		 * immediate is less than zero.
+		 */
+		insn &= ~(3 << 29);
+		if ((s64)imm >= 0) {
+			/* >=0: Set the instruction to MOVZ (opcode 10b). */
+			insn |= 2 << 29;
+		} else {
+			/*
+			 * <0: Set the instruction to MOVN (opcode 00b).
+			 *     Since we've masked the opcode already, we
+			 *     don't need to do anything other than
+			 *     inverting the new immediate field.
+			 */
+			imm = ~imm;
+		}
+	case INSN_IMM_MOVK:
+		mask = BIT(16) - 1;
+		shift = 5;
+		break;
+	case INSN_IMM_ADR:
+		lomask = 0x3;
+		himask = 0x7ffff;
+		immlo = imm & lomask;
+		imm >>= 2;
+		immhi = imm & himask;
+		imm = (immlo << 24) | (immhi);
+		mask = (lomask << 24) | (himask);
+		shift = 5;
+		break;
+	case INSN_IMM_26:
+		mask = BIT(26) - 1;
+		shift = 0;
+		break;
+	case INSN_IMM_19:
+		mask = BIT(19) - 1;
+		shift = 5;
+		break;
+	case INSN_IMM_16:
+		mask = BIT(16) - 1;
+		shift = 5;
+		break;
+	case INSN_IMM_14:
+		mask = BIT(14) - 1;
+		shift = 5;
+		break;
+	case INSN_IMM_12:
+		mask = BIT(12) - 1;
+		shift = 10;
+		break;
+	case INSN_IMM_9:
+		mask = BIT(9) - 1;
+		shift = 12;
+		break;
+	default:
+                Error(NULL, 0, 3000, "Invalid",
+		      "encode_insn_immediate: unknown immediate encoding %d\n",
+		      type);
+		return 0;
+	}
+
+	/* Update the immediate field. */
+	insn &= ~(mask << shift);
+	insn |= (imm & mask) << shift;
+
+	return insn;
+}
+
+#if 0
+static int reloc_insn_movw(enum aarch64_reloc_op op, void *place, u64 loc, u64 val,
+			   int lsb, enum aarch64_imm_type imm_type)
+{
+	u64 imm, limit = 0;
+	s64 sval;
+	u32 insn = *(u32 *)place;
+
+	sval = do_reloc(op, loc, val);
+	sval >>= lsb;
+	imm = sval & 0xffff;
+
+	/* Update the instruction with the new encoding. */
+	*(u32 *)place = encode_insn_immediate(imm_type, insn, imm);
+
+	/* Shift out the immediate field. */
+	sval >>= 16;
+
+	/*
+	 * For unsigned immediates, the overflow check is straightforward.
+	 * For signed immediates, the sign bit is actually the bit past the
+	 * most significant bit of the field.
+	 * The INSN_IMM_16 immediate type is unsigned.
+	 */
+	if (imm_type != INSN_IMM_16) {
+		sval++;
+		limit++;
+	}
+
+	/* Check the upper bits depending on the sign of the immediate. */
+	if ((u64)sval > limit)
+		return -ERANGE;
+
+	return 0;
+}
+#endif
+
+static UINT32 reloc_insn_imm(enum aarch64_reloc_op op, void *place, u64 loc, u64 val,
+			  int lsb, int len, enum aarch64_imm_type imm_type)
+{
+	u64 imm, imm_mask;
+	s64 sval;
+	u32 insn = *(u32 *)place;
+        u32 ret;
+
+	/* Calculate the relocation value. */
+	ret = sval = do_reloc(op, loc, val);
+	sval >>= lsb;
+
+	/* Extract the value bits and shift them to bit 0. */
+	imm_mask = (BIT(lsb + len) - 1) >> lsb;
+	imm = sval & imm_mask;
+
+	/* Update the instruction's immediate field. */
+	*(u32 *)place = encode_insn_immediate(imm_type, insn, imm);
+
+	return ret;
+}
+
+static UINT64 reloc_insn_extract(enum aarch64_imm_type type, u32 insn)
+{
+	u32 immlo, immhi, lomask, himask, mask;
+	int shift;
+
+	switch (type) {
+	case INSN_IMM_MOVNZ:
+		mask = BIT(16) - 1;
+		shift = 5;
+		break;
+	case INSN_IMM_MOVK:
+		mask = BIT(16) - 1;
+		shift = 5;
+		break;
+	case INSN_IMM_ADR:
+		lomask = 0x3;
+		himask = 0x7ffff;
+		mask = (lomask << 24) | himask;
+                shift = 5;
+
+                /* Extract the field */
+                insn >>= shift;
+                insn &= mask;
+                immlo = (insn >> 24) & lomask;
+                immhi = insn & himask;
+                immhi <<= 2;
+                return immhi | immlo;
+	case INSN_IMM_26:
+		mask = BIT(26) - 1;
+		shift = 0;
+		break;
+	case INSN_IMM_19:
+		mask = BIT(19) - 1;
+		shift = 5;
+		break;
+	case INSN_IMM_16:
+		mask = BIT(16) - 1;
+		shift = 5;
+		break;
+	case INSN_IMM_14:
+		mask = BIT(14) - 1;
+		shift = 5;
+		break;
+	case INSN_IMM_12:
+		mask = BIT(12) - 1;
+		shift = 10;
+		break;
+	case INSN_IMM_9:
+		mask = BIT(9) - 1;
+		shift = 12;
+		break;
+	default:
+                Error(NULL, 0, 3000, "Invalid",
+		      "encode_insn_immediate: unknown immediate encoding %d\n",
+		      type);
+		return 0;
+	}
+	/* Extract the immediate field. */
+        insn >>= shift;
+        insn &= mask;
+	return insn;
+}
+#endif
+
 STATIC
 BOOLEAN
 WriteSections64 (
@@ -684,7 +933,152 @@ WriteSections64 (
             Error (NULL, 0, 3000, "Invalid", "%s unsupported ELF EM_X86_64 relocation 0x%x.", mInImageName, (unsigned) ELF_R_TYPE(Rel->r_info));
           }
         } else if (mEhdr->e_machine == EM_AARCH64) {
+#if 0
+          /* TODO AArch64 :
+             - Add relocs for building with ARMCC (ARMCC uses REL not RELA like GCC).
+          */
+          // AARCH64 GCC uses RELA relocation. All relocations have to be fixed up.
+          // BOOLEAN val64bit = 0;
+          // UINT64 Instr64 = 0;
+#if defined(ENABLE_AARCH64_RELOCATION_SUPPORT)
+          UINT32 Instr32 = *(UINT32 *) Targ;
+          UINT64 P = 0;
+          UINT64 S = 0;
+          UINT64 addend = 0;
+          UINT32 RelVal = 0;
+#endif
+          switch (ELF_R_TYPE(Rel->r_info)) {
+#if defined(ENABLE_AARCH64_RELOCATION_SUPPORT)
+          case R_AARCH64_LD_PREL_LO19:
+            P = SecOffset + Rel->r_offset - SecShdr->sh_addr;
+            addend = reloc_insn_extract(INSN_IMM_26, Instr32);
+            S = (P & ~0xFFF) + addend;
+            RelVal = reloc_insn_imm(RELOC_OP_PREL, Targ, P, S, 2, 19, INSN_IMM_19);
+            break;
+          case R_AARCH64_CALL26:
+          case R_AARCH64_JUMP26:
+            if (ELF64_ST_TYPE(Sym->st_info) != 0x3) { /* STT_FUNC */
+              P = SecOffset + Rel->r_offset - SecShdr->sh_addr;
+              addend = Sym->st_value + Rel->r_addend - SymShdr->sh_addr;
+              S = mCoffSectionsOffset[Sym->st_shndx] + addend;
+              RelVal = reloc_insn_imm(RELOC_OP_PREL, Targ, P, S, 2, 26, INSN_IMM_26);
+            }
+            break;
+          case R_AARCH64_LDST32_ABS_LO12_NC:
+            P = SecOffset + Rel->r_offset - SecShdr->sh_addr;
+            addend = reloc_insn_extract(INSN_IMM_12, Instr32);
+            addend <<= 2;
+            S = (P & ~0xFFF) + addend - (P & ~0xFFF);
+            RelVal = reloc_insn_imm(RELOC_OP_ABS, Targ, P, S, 2, 10, INSN_IMM_12);
+            break;
+          case R_AARCH64_LDST8_ABS_LO12_NC:
+            P = SecOffset + Rel->r_offset - SecShdr->sh_addr;
+            addend = reloc_insn_extract(INSN_IMM_12, Instr32);
+            S = (P & ~0xFFF) + addend - (P & ~0xFFF);
+            RelVal = reloc_insn_imm(RELOC_OP_ABS, Targ, P, S, 0, 12, INSN_IMM_12);
+            break;
+          case R_AARCH64_LDST64_ABS_LO12_NC:
+            P = SecOffset + Rel->r_offset - SecShdr->sh_addr;
+            addend = reloc_insn_extract(INSN_IMM_12, Instr32);
+            addend <<= 3;
+            S = (P & ~0xFFF) + addend - (P & ~0xFFF);
+            RelVal = reloc_insn_imm(RELOC_OP_ABS, Targ, P, S, 3, 9, INSN_IMM_12);
+            break;
+          case R_AARCH64_LDST16_ABS_LO12_NC:
+            P = SecOffset + Rel->r_offset - SecShdr->sh_addr;
+            addend = reloc_insn_extract(INSN_IMM_12, Instr32);
+            addend <<= 1;
+            S = (P & ~0xFFF) + addend - (P & ~0xFFF);
+            RelVal = reloc_insn_imm(RELOC_OP_ABS, Targ, P, S, 1, 11, INSN_IMM_12);
+            break;
+          case R_AARCH64_ADR_PREL_PG_HI21:
+            // Due to the fact that the symbol location is lost by the linker
+            // when create the DLL file, we need to extract the imm value from
+            // the actual instruction.
+            P = SecOffset + Rel->r_offset - SecShdr->sh_addr;
+            addend = reloc_insn_extract(INSN_IMM_ADR, Instr32) << 12;
+            S = (P & ~0xFFF) + addend;
+            RelVal = reloc_insn_imm(RELOC_OP_PAGE, Targ, P, S, 12, 21, INSN_IMM_ADR);
+            break;
+          case R_AARCH64_ADD_ABS_LO12_NC:
+            // Due to the fact that the symbol location is lost by the linker
+            // when create the DLL file, we need to extract the imm value from
+            // the actual instruction.
+            P = SecOffset + Rel->r_offset - SecShdr->sh_addr;
+            addend = reloc_insn_extract(INSN_IMM_12, Instr32);
+            S = (P & ~0xFFF) + addend - (P & ~0xFFF);
+            RelVal = reloc_insn_imm(RELOC_OP_ABS, Targ, P, S, 0, 12, INSN_IMM_12);
+            break;
+          case R_AARCH64_ADR_GOT_PAGE:
+//            Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s unsupported ELF EM_AARCH64 relocation R_AARCH64_ADR_GOT_PAGE.", mInImageName);
+            break;
+          case R_AARCH64_LD64_GOT_LO12_NC:
+//            Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s unsupported ELF EM_AARCH64 relocation R_AARCH64_LD64_GOT_LO12_NC.", mInImageName);
+            break;
+#else
+          case R_AARCH64_LD_PREL_LO19:
+            if  (Rel->r_addend != 0 ) { /* TODO */
+              Error (NULL, 0, 3000, "Invalid", "AArch64: R_AARCH64_LD_PREL_LO19 Need to fixup with addend!.");
+            }
+            break;
 
+          case R_AARCH64_CALL26:
+            if  (Rel->r_addend != 0 ) { /* TODO */
+              Error (NULL, 0, 3000, "Invalid", "AArch64: R_AARCH64_CALL26 Need to fixup with addend!.");
+            }
+            break;
+
+          case R_AARCH64_JUMP26:
+            if  (Rel->r_addend != 0 ) { /* TODO : AArch64 '-O2' optimisation. */
+              Error (NULL, 0, 3000, "Invalid", "AArch64: R_AARCH64_JUMP26 Need to fixup with addend!.");
+            }
+            break;
+
+          case R_AARCH64_ADR_PREL_PG_HI21:
+            // TODO : AArch64 'small' memory model.
+            Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s unsupported ELF EM_AARCH64 relocation R_AARCH64_ADR_PREL_PG_HI21.", mInImageName);
+            break;
+
+          case R_AARCH64_ADD_ABS_LO12_NC:
+            // TODO : AArch64 'small' memory model.
+            Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s unsupported ELF EM_AARCH64 relocation R_AARCH64_ADD_ABS_LO12_NC.", mInImageName);
+            break;
+#endif
+          case R_AARCH64_ABS64: // Absolute relocations.
+            // Instr64 = *(UINT64 *) Targ;
+            *(UINT64 *)Targ = *(UINT64 *)Targ - SymShdr->sh_addr + mCoffSectionsOffset[Sym->st_shndx];
+            // val64bit = 1;
+            break;
+
+          default:
+            Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s unsupported ELF EM_AARCH64 relocation 0x%x.", mInImageName, (unsigned) ELF_R_TYPE(Rel->r_info));
+          }
+#if defined(ENABLE_AARCH64_RELOCATION_SUPPORT)
+#if 0
+            VerboseMsg("\nSection[%d] Relocate Entry[%d]: Target Section %d "
+                     "Section addr 0x%08X offset 0x%016LX "
+                     "Sym Idx %d Type %d Addend 0x%016LX Target Addend 0x%016LX",
+                   Idx, RelIdx / RelShdr->sh_entsize, RelShdr->sh_info,
+                   SecShdr->sh_addr, Rel->r_offset,
+                   ELF_R_SYM(Rel->r_info), ELF_R_TYPE(Rel->r_info),
+                   Rel->r_addend, addend);
+            VerboseMsg("Symbol: name %s info 0x%02X sectidx %d value 0x%016LX size %d",
+                   (UINT8*)mEhdr + mStrNameOffset + Sym->st_name,
+                   Sym->st_info, Sym->st_shndx, Sym->st_value, Sym->st_size);
+            VerboseMsg("Symbol Section %d section addr 0x%08X P 0x%016LX S 0x%016LX",
+                   Sym->st_shndx, SymShdr->sh_addr, P, S);
+            if (!val64bit) {
+              VerboseMsg("File Offset: 0x%08X Target 0x%08X Value 0x%08X (0x%08X) Relative 0x%08X",
+                   SecOffset, SecOffset + (Rel->r_offset - SecShdr->sh_addr),
+                   Instr32, *(UINT32 *)Targ, RelVal);
+            } else {
+              VerboseMsg("File Offset: 0x%08X Target 0x%08X Value 0x%016LX (0x%016LX) Relative 0x%08X",
+                   SecOffset, SecOffset + (Rel->r_offset - SecShdr->sh_addr),
+                   Instr64, *(UINT64 *)Targ, RelVal);
+            }
+#endif
+#endif
+#endif
           // AARCH64 GCC uses RELA relocation, so all relocations have to be fixed up.
           // As opposed to ARM32 using REL.
 
@@ -785,24 +1179,36 @@ WriteRelocations64 (
             // AArch64 GCC uses RELA relocation, so all relocations has to be fixed up. ARM32 uses REL.
             switch (ELF_R_TYPE(Rel->r_info)) {
             case R_AARCH64_LD_PREL_LO19:
-              break;
+		break;
 
             case R_AARCH64_CALL26:
-              break;
+		break;
 
             case R_AARCH64_JUMP26:
-              break;
+		break;
 
             case R_AARCH64_ADR_PREL_PG_HI21:
+#if !defined(ENABLE_AARCH64_RELOCATION_SUPPORT)
               // TODO : AArch64 'small' memory model.
               Error (NULL, 0, 3000, "Invalid", "WriteRelocations64(): %s unsupported ELF EM_AARCH64 relocation R_AARCH64_ADR_PREL_PG_HI21.", mInImageName);
+#endif
               break;
 
             case R_AARCH64_ADD_ABS_LO12_NC:
+#if !defined(ENABLE_AARCH64_RELOCATION_SUPPORT)
               // TODO : AArch64 'small' memory model.
               Error (NULL, 0, 3000, "Invalid", "WriteRelocations64(): %s unsupported ELF EM_AARCH64 relocation R_AARCH64_ADD_ABS_LO12_NC.", mInImageName);
+#endif
               break;
-
+#if defined(ENABLE_AARCH64_RELOCATION_SUPPORT)
+            case R_AARCH64_ADR_GOT_PAGE:
+            case R_AARCH64_LD64_GOT_LO12_NC:
+            case R_AARCH64_LDST32_ABS_LO12_NC:
+            case R_AARCH64_LDST8_ABS_LO12_NC:
+            case R_AARCH64_LDST64_ABS_LO12_NC:
+            case R_AARCH64_LDST16_ABS_LO12_NC:
+              break;
+#endif
             case R_AARCH64_ABS64:
               CoffAddFixup(
                 (UINT32) ((UINT64) mCoffSectionsOffset[RelShdr->sh_info]

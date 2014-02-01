@@ -14,5 +14,5 @@
 all:
 
 clean:
-	find . -name '*.pyc' -exec rm '{}' ';'
+	find . -name '*.pyc' -exec rm -f '{}' ';'
 
