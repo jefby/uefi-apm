@@ -2747,6 +2747,7 @@ DiscoverBootFile (
   @retval EFI_ABORTED                 The file load process was manually cancelled.
 
 **/
+extern VOID		          *gUefiPxePrivate; //global access by pxelinux.0
 EFI_STATUS
 EFIAPI
 EfiPxeLoadFile (
@@ -2765,6 +2766,7 @@ EfiPxeLoadFile (
   BOOLEAN                     MediaPresent;
 
   Private         = PXEBC_PRIVATE_DATA_FROM_LOADFILE (This);
+  gBS->Reserved = gUefiPxePrivate = (VOID *)Private;
   PxeBc           = &Private->PxeBc;
   NewMakeCallback = FALSE;
   Status          = EFI_DEVICE_ERROR;

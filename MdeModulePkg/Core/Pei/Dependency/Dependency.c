@@ -57,6 +57,8 @@ IsPpiInstalled (
   //
   CopyMem(&PpiGuid, Stack->Operator, sizeof(EFI_GUID));
 
+  DEBUG((EFI_D_INFO, "IsPpiInstalled %g\n", &PpiGuid));
+
   //
   // Check if the PPI is installed.
   //

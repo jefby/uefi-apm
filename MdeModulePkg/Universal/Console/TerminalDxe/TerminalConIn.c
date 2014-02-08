@@ -1188,7 +1188,7 @@ UnicodeToEfiKey (
 {
   EFI_STATUS          Status;
   EFI_STATUS          TimerStatus;
-  UINT16              UnicodeChar;
+  UINT16              UnicodeChar = 0x0;
   EFI_INPUT_KEY       Key;
   BOOLEAN             SetDefaultResetState;
 
