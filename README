@@ -12,6 +12,7 @@ linaro-uefi-next/linaro-release => tracking release branch from Linaro
 tianocore => tracking branch from tianocore.org
 
 apm/1.10.05-beta_rc => source straight from APM unchanged
+apm/1.11.06-beta_rc => source straight from APM unchanged
 
 apm/merge => merged Linaro and APM, always most recent
 
