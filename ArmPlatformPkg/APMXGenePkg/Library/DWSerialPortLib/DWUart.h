@@ -59,8 +59,6 @@ enum DWUartReg {
 
 enum DWOper { DW_OPER_READ, DW_OPER_WRITE };
 
-
-/* Initialize UART0, 1 */
 RETURN_STATUS
 EFIAPI
 DWUartInitializePort (

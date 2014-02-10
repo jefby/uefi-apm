@@ -23,7 +23,6 @@
   DWSerialPortExtLib.c
 
 [LibraryClasses]
-  DWUartLib
   PcdLib
 
 [Packages]

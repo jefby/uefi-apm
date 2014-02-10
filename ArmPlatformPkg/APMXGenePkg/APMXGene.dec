@@ -52,6 +52,8 @@
   gArmPlatformTokenSpaceGuid.PcdSendSgiToBringUpSecondaryCores|FALSE|BOOLEAN|0x00000004
 
   gArmPlatformTokenSpaceGuid.PcdNorFlashCheckBlockLocked|FALSE|BOOLEAN|0x0000003C
+  #PCIE
+  gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeResetGpio|FALSE|BOOLEAN|0x00000076
 
 [PcdsFixedAtBuild.common]
   gArmPlatformTokenSpaceGuid.PcdClusterCount|2|UINT32|0x00000038
@@ -143,31 +145,59 @@
   gArmPlatformTokenSpaceGuid.PcdSPIFlashCS|0x0|UINT32|0x00000050
   gArmPlatformTokenSpaceGuid.PcdSPIFlashMaxHz|4000000|UINT32|0x00000051
 
-  # AHCI Controller 3 (Mustang EVAL board only has controller 3 exposed)
+  # AHCI common (Enable controller 2 and 3)
+  gArmPlatformTokenSpaceGuid.PcdSataControllerMask|0x1|UINT32|0x00000079
+  
+  # AHCI Controller 3 (Enabled)
   gArmPlatformTokenSpaceGuid.PcdAHCI3RegisterBase|0x1a800000|UINT64|0x00000055
   gArmPlatformTokenSpaceGuid.PcdSata3SerdesRegisterBase|0x1f230000|UINT64|0x00000056
   gArmPlatformTokenSpaceGuid.PcdSata3GenMax|3|UINT32|0x00000057
   gArmPlatformTokenSpaceGuid.PcdSata3Irq|136|UINT32|0x00000058
 
-  # AHCI Controller 2
+  # AHCI Controller 2 (Enabled)
   gArmPlatformTokenSpaceGuid.PcdAHCI2RegisterBase|0x1a400000|UINT64|0x00000059
   gArmPlatformTokenSpaceGuid.PcdSata2SerdesRegisterBase|0x1f220000|UINT64|0x0000005A
   gArmPlatformTokenSpaceGuid.PcdSata2GenMax|3|UINT32|0x0000005B
   gArmPlatformTokenSpaceGuid.PcdSata2Irq|135|UINT32|0x0000005C
 
-  # AHCI Controller 1
+  # AHCI Controller 1 (disabled)
   gArmPlatformTokenSpaceGuid.PcdAHCI1RegisterBase|0x1a000000|UINT64|0x0000005D
   gArmPlatformTokenSpaceGuid.PcdSata1SerdesRegisterBase|0x1f210000|UINT64|0x0000005E
   gArmPlatformTokenSpaceGuid.PcdSata1GenMax|3|UINT32|0x0000005F
   gArmPlatformTokenSpaceGuid.PcdSata1Irq|134|UINT32|0x00000060
 
-  # Misc
-  gArmPlatformTokenSpaceGuid.PcdMemSizeAddr|0|UINT64|0x00000070
+  # XHCI common
+  gArmPlatformTokenSpaceGuid.PcdUsbControllerMask|0x0|UINT32|0x0000007D
 
-  gArmPlatformTokenSpaceGuid.PcdKernMailboxAddr|0|UINT64|0x00000071
-  gArmPlatformTokenSpaceGuid.PcdTTBBaseAddr|0|UINT64|0x00000072
-  
+  # XHCI Controller 2
+  gArmPlatformTokenSpaceGuid.PcdXHCI2RegisterBase|0x19800000|UINT64|0x00000061
+  gArmPlatformTokenSpaceGuid.PcdUsb2CsrRegisterBase|0x1f290000|UINT64|0x00000062
+  gArmPlatformTokenSpaceGuid.PcdUsb2Irq|137|UINT32|0x00000063
+  gArmPlatformTokenSpaceGuid.PcdUsb2ClkSel|0|UINT32|0x00000064
+  gArmPlatformTokenSpaceGuid.PcdUsb2OvrcurEn|0|UINT32|0x00000065
+  gArmPlatformTokenSpaceGuid.PcdUsb2OvrcurIvrt|0|UINT32|0x00000066
+
+  # XHCI Controller 1
+  gArmPlatformTokenSpaceGuid.PcdXHCI1RegisterBase|0x19000000|UINT64|0x00000067
+  gArmPlatformTokenSpaceGuid.PcdUsb1CsrRegisterBase|0x1f280000|UINT64|0x00000068
+  gArmPlatformTokenSpaceGuid.PcdUsb1Irq|136|UINT32|0x00000069
+  gArmPlatformTokenSpaceGuid.PcdUsb1ClkSel|0|UINT32|0x0000006A
+  gArmPlatformTokenSpaceGuid.PcdUsb1OvrcurEn|0|UINT32|0x0000006B
+  gArmPlatformTokenSpaceGuid.PcdUsb1OvrcurIvrt|0|UINT32|0x0000006C
+
   #PCIE
   gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeMask|0|UINT32|0x00000073
   gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeGen|0x33333|UINT32|0x00000074
   gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeWidth|0x48148|UINT32|0x00000075
+  gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeResetGpioPin|0x0|UINT64|0x00000077
+
+  # AHBC
+  gArmPlatformTokenSpaceGuid.PcdGPIORegisterBase|0x1c024000|UINT64|0x00000078
+
+  # Misc
+  gArmPlatformTokenSpaceGuid.PcdMemSizeAddr|0|UINT64|0x0000007A
+
+  gArmPlatformTokenSpaceGuid.PcdKernMailboxAddr|0|UINT64|0x0000007B
+  gArmPlatformTokenSpaceGuid.PcdTTBBaseAddr|0|UINT64|0x0000007C
+  
+  

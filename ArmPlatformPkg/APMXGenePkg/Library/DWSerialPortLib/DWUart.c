@@ -20,13 +20,14 @@
  *  AHBC CLK -----------------------> UART CLK OUPUT
  *
  **/
-
+#include <Library/ArmLib.h>
 #include <Library/IoLib.h>
 #include <Library/PcdLib.h>
-#include <Drivers/DWUart.h>
 #include <Library/TimerLib.h>
 
-#define STORM_SLIMPRO_CSR_BASE			0x17000000
+#include "DWUart.h"
+
+#define STORM_SLIMPRO_CSR_BASE                  0x17000000
 #define SCU_SOCPLL_ADDR                         0x00000120
 #define SCU_SOCAHBDIV_ADDR                      0x00000164
 #define CLKR_RD(src)                            (((src) & 0x07000000)>>24)
@@ -73,19 +74,15 @@ UINT64 GetAHBClk(VOID)
 }
 
 VOID ConfigureUart(
-  volatile IN UINT64     UartBase,
+  IN UINTN               UartBase,
   IN UINT64              BaudRate,
   IN EFI_PARITY_TYPE     Parity,
   IN UINT8               DataBits,
-  IN EFI_STOP_BITS_TYPE  StopBits
+  IN EFI_STOP_BITS_TYPE  StopBits,
+  IN UINT32              Divider
 )
 {
   volatile UINT32 Data;
-  UINT32 Divider;
-  UINT32 UartClkDiv;
-
-  /* Compute the Divider for 25MHz UART input clock or close to */
-  UartClkDiv = GetAHBClk() / UART_CLK_INPUT;
 
   /* Configure for 8-Data bit No parity 1 stop bit 0x3 (8N1) */
   Data = MmioRead32(UartBase + LCR);
@@ -99,7 +96,6 @@ VOID ConfigureUart(
   Data = MmioRead32(UartBase + LCR);
 
   /* Set divisor baud rate */
-  Divider = GetAHBClk() / UartClkDiv / BaudRate / 16;
   MmioWrite32(UartBase + DLL, Divider & 0xFF);
   MmioWrite32(UartBase + DLH, (Divider >> 8) & 0xFF);
 
@@ -128,24 +124,29 @@ DWUartInitializePort (
   IN EFI_STOP_BITS_TYPE  StopBits
   )
 {
+  volatile UINTN UartBase;
   volatile UINT32 Data;
-  volatile UINTN AHBCBase = GetAHBCCSRBase();
-  volatile UINT64 UartBase;
+  UINT32 Divider;
   UINT32 UartClkDiv;
+
+  volatile UINTN AHBCBase = GetAHBCCSRBase();
 
   /* Set AHBC Clk CSR/APB_PERI Enable bit */
   Data = MmioRead32(AHBCBase + 0x8);
   MmioWrite32(AHBCBase + 0x8, Data | 0x201);
+  ArmDataMemoryBarrier();
   Data = MmioRead32(AHBCBase + 0x8);	/* Ensure barrier */
 
   /* Clear AHBC APB_PERI reset bit */
   Data = MmioRead32(AHBCBase + 0x0);
   MmioWrite32(AHBCBase + 0x0, Data & ~0x200);
+  ArmDataMemoryBarrier();
   Data = MmioRead32(AHBCBase + 0x0);	/* Ensure barrier */
 
   /* Clear AHBC CSR reset bit */
   Data = MmioRead32(AHBCBase + 0x0);
   MmioWrite32(AHBCBase + 0x0, Data & ~0x001);
+  ArmDataMemoryBarrier();
   Data = MmioRead32(AHBCBase + 0x0);	/* Ensure barrier */
 
 
@@ -161,34 +162,42 @@ DWUartInitializePort (
   Data |= (1 << 3);	/* Select Serial Clock from AHB */
   Data |= (UartClkDiv << 4);	/* Divder the UART input clock by 4 for 50Mhz */
   MmioWrite32(AHBCBase + 0x10, Data);
+  ArmDataMemoryBarrier();
   Data = MmioRead32(AHBCBase + 0x10);	/* Ensure barrier */
 
   /* Set Clk UART0 Enable bit */
   Data = MmioRead32(AHBCBase + 0x08);
   MmioWrite32(AHBCBase + 0x08, Data | 0x8);
+  ArmDataMemoryBarrier();
   Data = MmioRead32(AHBCBase + 0x08);
 
   /* Clear UART0 reset bit */
   Data = MmioRead32(AHBCBase + 0x00);
   MmioWrite32(AHBCBase + 0x00, Data & ~0x8);
+  ArmDataMemoryBarrier();
   Data = MmioRead32(AHBCBase + 0x00);
 
   /* Set Clk UART1 Enable bit */
   Data = MmioRead32(AHBCBase + 0x08);
   MmioWrite32(AHBCBase + 0x08, Data | 0x10);
+  ArmDataMemoryBarrier();
   Data = MmioRead32(AHBCBase + 0x08);
 
   /* Clear UART1 reset bit */
   Data = MmioRead32(AHBCBase + 0x00);
   MmioWrite32(AHBCBase + 0x00, Data & ~0x10);
+  ArmDataMemoryBarrier();
   Data = MmioRead32(AHBCBase + 0x00);
+
+  /* Set divisor baud rate */
+  Divider = GetAHBClk() / UartClkDiv / BaudRate / 16;
 
   /* we initialize UART0, 1 */
   UartBase = UART0_REG_BASE_ADDR;
-  ConfigureUart(UartBase, BaudRate, Parity, DataBits, StopBits);
+  ConfigureUart(UartBase, BaudRate, Parity, DataBits, StopBits, Divider);
 
   UartBase = UART1_REG_BASE_ADDR;
-  ConfigureUart(UartBase, BaudRate, Parity, DataBits, StopBits);
+  ConfigureUart(UartBase, BaudRate, Parity, DataBits, StopBits, Divider);
 
   return EFI_SUCCESS;
 }
@@ -249,8 +258,9 @@ DWUartPoll (
   do {
     val = MmioRead32(UartBase + LSR);
     if (dwOper == DW_OPER_READ) {
-      if (val & DW_LSR_DR)
+      if (val & DW_LSR_DR) {
         return TRUE;
+      }
     } else {
       if (val & DW_LSR_THRE)
         return TRUE;

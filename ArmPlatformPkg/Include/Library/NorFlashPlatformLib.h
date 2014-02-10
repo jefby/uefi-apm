@@ -34,14 +34,14 @@ NorFlashPlatformGetDevices (
   OUT UINT32                  *Count
   );
 
-UINT32
+EFI_STATUS
 NorFlashPlatformRead (
   IN  UINT32 Offset,
   IN  VOID *Buffer,
   IN  UINT32 Len
   );
 
-UINT32
+EFI_STATUS
 NorFlashPlatformWrite (
   IN  UINT32 Offset,
   IN  VOID *Buffer,

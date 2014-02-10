@@ -464,7 +464,10 @@ AhciDisableFisReceive (
   }
 
   AhciAndReg (PciIo, Offset, (UINT32)~(EFI_AHCI_PORT_CMD_FRE));
-
+#ifdef APM_XGENE
+  /* the HW doesn't clear CMD_FR quickly */
+  return EFI_SUCCESS;
+#else
   return AhciWaitMmioSet (
            PciIo,
            Offset,
@@ -472,6 +475,7 @@ AhciDisableFisReceive (
            0,
            Timeout
            );
+#endif
 }
 
 

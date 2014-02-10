@@ -40,7 +40,6 @@
   ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64Lib.inf
   ArmPlatformLib|ArmPlatformPkg/APMXGenePkg/Library/APMXGeneArmPlatformLib/APMXGeneArmPlatformLib.inf
   APMXGeneMemcLib|ArmPlatformPkg/APMXGenePkg/Library/APMXGeneMemcLib/APMXGeneMemcLib.inf
-  DWUartLib|ArmPlatformPkg/APMXGenePkg/Drivers/DWUart/DWUart.inf
   STMicroLib|ArmPlatformPkg/APMXGenePkg/Drivers/STMicro/STMicro.inf
   I2CLib|ArmPlatformPkg/APMXGenePkg/Library/I2CLib/I2CLib.inf
   SPILib|ArmPlatformPkg/APMXGenePkg/Library/SPILib/SPILib.inf
@@ -60,6 +59,7 @@
   DpcLib|MdeModulePkg/Library/DxeDpcLib/DxeDpcLib.inf
 
   UefiScsiLib|MdePkg/Library/UefiScsiLib/UefiScsiLib.inf
+  UefiUsbLib|MdePkg/Library/UefiUsbLib/UefiUsbLib.inf
 
 [LibraryClasses.common.SEC]
   ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64LibSec.inf
@@ -72,8 +72,7 @@
   #ArmGicLib|ArmPkg/Drivers/PL390Gic/PL390GicSecLib.inf
 
 [BuildOptions]
-  #GCC:*_*_AARCH64_ARCHCC_FLAGS = -mgeneral-regs-only -DARM_CPU_AARCH64 -DAPM_XGENE -DAPM_XGENE_UHP -DAPM_XGENE_GFC_FLASH
-  GCC:*_*_AARCH64_ARCHCC_FLAGS = -mgeneral-regs-only -DARM_CPU_AARCH64 -DAPM_XGENE -DAPM_XGENE_UHP -DAPM_XGENE_SPI_FLASH 
+  GCC:*_*_AARCH64_ARCHCC_FLAGS = -mgeneral-regs-only -DARM_CPU_AARCH64 -DAPM_XGENE -DAPM_XGENE_SPI_FLASH -DAPM_XGENE_UHP=0x100000000
   GCC:*_*_AARCH64_PP_FLAGS = -DARM_CPU_AARCH64
   GCC:*_*_AARCH64_PLATFORM_FLAGS == -I$(WORKSPACE)/ArmPlatformPkg/APMXGenePkg/Include
 
@@ -92,9 +91,14 @@
    ## If TRUE, Graphics Output Protocol will be installed on virtual handle created by ConsplitterDxe.
    #  It could be set FALSE to save size.
    gEfiMdeModulePkgTokenSpaceGuid.PcdConOutGopSupport|TRUE
+   
+   #
+   # PCIE
+   #
+   gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeResetGpio|TRUE
 
 [PcdsDynamicDefault.common]
-   # System Memory (4GB)
+   # System Memory (4GB) 
    gArmTokenSpaceGuid.PcdSystemMemorySize|0x100000000
 
 [PcdsFixedAtBuild.common]
@@ -181,6 +185,21 @@
    gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"VenHw(F40A3869-92C4-4275-8501-4491A1A20C19)/\\uImage"
    gArmPlatformTokenSpaceGuid.PcdFdtDevicePath|L"VenHw(F40A3869-92C4-4275-8501-4491A1A20C19)/\\mustang.dtb"
    gArmPlatformTokenSpaceGuid.PcdDefaultBootInitrdPath|L"VenHw(F40A3869-92C4-4275-8501-4491A1A20C19)/\\uRamdisk"
+   # From U-Boot Memory (All images)
+   # This helps speed up Tianocore and UEFI/Linux testing
+   #    Mustang=> tftp 0x4002000000 ${user_dir}/mustang_tianocore_ubt.fd
+   #    Mustang=> tftp 0x1d000000   ${user_dir}/mustang_tianocore_sec_ubt.fd
+   #    Mustang=> tftp 0x4004800000 ${user_dir}/uImage
+   #    Mustang=> tftp 0x4005500000 ${user_dir}/mustang.dtb
+   #    Mustang=> tftp 0x4005600000 ${user_dir}/uRamdisk
+   #    Mustang=> go 0x1d000000
+   # Note, You need to erase Tianocore old "Boot Menu configration" if
+   # you are going "From NOR MTD" to "U-Boot Memory (All images)."
+   # If this is the case, do the following from U-Boot.
+   #    Mustang=> sf probe 0; sf erase 0x700000 0x100000
+   #gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"VenHw(02118005-9DA7-443A-92D5-781F022AEDBB)/MemoryMapped(0x0,0x4004800000,0x40054FFFFF)"
+   #gArmPlatformTokenSpaceGuid.PcdFdtDevicePath|L"VenHw(02118005-9DA7-443A-92D5-781F022AEDBB)/MemoryMapped(0x0,0x4005500000,0x40550FFFF)"
+   #gArmPlatformTokenSpaceGuid.PcdDefaultBootInitrdPath|L"VenHw(02118005-9DA7-443A-92D5-781F022AEDBB)/MemoryMapped(0x0,0x4005600000,0x40087FFFFF)"
 
    #Map SPI_NOR flash from 0x800000 to 0x800000 + PcdSPIFlashMappedLen to PcdSystemMemoryBase + PcdSPIFlashMappedBaseOffset + 0x800000. Need to fix it for fast booting
    #gArmPlatformTokenSpaceGuid.PcdSPIFlashMappedBaseOffset|0x4000000
@@ -191,14 +210,20 @@
    gArmTokenSpaceGuid.PcdArmLinuxInitrdMaxOffset|0x04000000
 
    # Use the serial console (ConIn & ConOut) and the Graphic driver (ConOut)
-   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(9600,8,N,1)/VenPcAnsi()"
-   gArmPlatformTokenSpaceGuid.PcdDefaultConInPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(9600,8,N,1)/VenPcAnsi()"
+   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,N,1)/VenPcAnsi()"
+   gArmPlatformTokenSpaceGuid.PcdDefaultConInPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,N,1)/VenPcAnsi()"
    gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|5
 
    #
    # ARM Architectual Timer Frequency
    #
    gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz|50000000
+
+   # SATA
+   gArmPlatformTokenSpaceGuid.PcdSataControllerMask|0x6 # Controller 1,2
+
+   # USB
+   gArmPlatformTokenSpaceGuid.PcdUsbControllerMask|0x3
 
    #
    # SD
@@ -213,6 +238,7 @@
    gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeMask|0x1 # Port 0 enabled
    gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeGen|0x33333
    gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeWidth|0x48148
+   gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeResetGpioPin|0x19
 
 ################################################################################
 #
@@ -306,6 +332,7 @@
    EmbeddedPkg/SerialDxe/SerialDxe.inf
 
    MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
+   #MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
 
    ArmPkg/Drivers/PL390Gic/PL390GicDxe.inf
    ArmPkg/Drivers/TimerDxe/TimerDxe.inf
@@ -329,7 +356,15 @@
    MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
    FatPkg/EnhancedFatDxe/Fat.inf
    MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
-      
+
+   #
+   # USB XHCI Support
+   #
+   ArmPlatformPkg/APMXGenePkg/Bus/Usb/UsbControllerDxe/UsbControllerDxe.inf
+   MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
+   MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
+   MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
+   MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe.inf
 
    #
    # Application
@@ -392,18 +427,16 @@
    #
    # PCI Support
    #
+   ArmPlatformPkg/APMXGenePkg/Drivers/GpioDxe/GpioDxe.inf
    ArmPlatformPkg/APMXGenePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf
    MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
    
    #
    # IDE/AHCI Support
    #
-   ArmPlatformPkg/APMXGenePkg/Drivers/SataControllerDxe/SataControllerDxe.inf
-   ArmPlatformPkg/APMXGenePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
+   ArmPlatformPkg/APMXGenePkg/Drivers/SataControllerNewDxe/SataControllerDxe.inf
    DuetPkg/SataControllerDxe/SataControllerDxe.inf
    MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
    MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
    MdeModulePkg/Bus/Scsi/ScsiBusDxe/ScsiBusDxe.inf
    MdeModulePkg/Bus/Scsi/ScsiDiskDxe/ScsiDiskDxe.inf
-   
-   

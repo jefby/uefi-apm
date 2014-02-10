@@ -40,7 +40,6 @@
   ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64Lib.inf
   ArmPlatformLib|ArmPlatformPkg/APMXGenePkg/Library/APMXGeneArmPlatformLib/APMXGeneArmPlatformLib.inf
   APMXGeneMemcLib|ArmPlatformPkg/APMXGenePkg/Library/APMXGeneMemcLib/APMXGeneMemcLib.inf
-  DWUartLib|ArmPlatformPkg/APMXGenePkg/Drivers/DWUart/DWUart.inf
   STMicroLib|ArmPlatformPkg/APMXGenePkg/Drivers/STMicro/STMicro.inf
   I2CLib|ArmPlatformPkg/APMXGenePkg/Library/I2CLib/I2CLib.inf
   SPILib|ArmPlatformPkg/APMXGenePkg/Library/SPILib/SPILib.inf
@@ -60,6 +59,7 @@
   DpcLib|MdeModulePkg/Library/DxeDpcLib/DxeDpcLib.inf
 
   UefiScsiLib|MdePkg/Library/UefiScsiLib/UefiScsiLib.inf
+  UefiUsbLib|MdePkg/Library/UefiUsbLib/UefiUsbLib.inf
 
 [LibraryClasses.common.SEC]
   ArmLib|ArmPkg/Library/ArmLib/AArch64/AArch64LibSec.inf
@@ -91,6 +91,11 @@
    ## If TRUE, Graphics Output Protocol will be installed on virtual handle created by ConsplitterDxe.
    #  It could be set FALSE to save size.
    gEfiMdeModulePkgTokenSpaceGuid.PcdConOutGopSupport|TRUE
+   
+   #
+   # PCIE
+   #
+   gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeResetGpio|TRUE
 
 [PcdsDynamicDefault.common]
    # System Memory (4GB)
@@ -202,6 +207,12 @@
    #
    gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz|50000000
 
+   # SATA
+   gArmPlatformTokenSpaceGuid.PcdSataControllerMask|0x6 # Controller 1,2
+
+   # USB
+   gArmPlatformTokenSpaceGuid.PcdUsbControllerMask|0x3
+
    #
    # SD
    #
@@ -212,9 +223,10 @@
    #
    # PCIE
    #
-   gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeMask|0x0 # Port 0 enabled
+   gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeMask|0x1 # Port 0 enabled
    gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeGen|0x33333
    gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeWidth|0x48148
+   gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeResetGpioPin|0x19
 
 ################################################################################
 #
@@ -333,6 +345,15 @@
    MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
    #
+   # USB XHCI Support
+   #
+   ArmPlatformPkg/APMXGenePkg/Bus/Usb/UsbControllerDxe/UsbControllerDxe.inf
+   MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
+   MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
+   MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
+   MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe.inf
+
+   #
    # Application
    #
    EmbeddedPkg/Ebl/Ebl.inf
@@ -393,14 +414,14 @@
    #
    # PCI Support
    #
+   ArmPlatformPkg/APMXGenePkg/Drivers/GpioDxe/GpioDxe.inf
    ArmPlatformPkg/APMXGenePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf
    MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
    
    #
    # IDE/AHCI Support
    #
-   ArmPlatformPkg/APMXGenePkg/Drivers/SataControllerDxe/SataControllerDxe.inf
-   ArmPlatformPkg/APMXGenePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
+   ArmPlatformPkg/APMXGenePkg/Drivers/SataControllerNewDxe/SataControllerDxe.inf
    DuetPkg/SataControllerDxe/SataControllerDxe.inf
    MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
    MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
