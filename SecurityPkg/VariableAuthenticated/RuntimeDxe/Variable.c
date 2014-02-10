@@ -278,6 +278,7 @@ UpdateVariableStore (
   EFI_FIRMWARE_VOLUME_HEADER  *FwVolHeader;
   VARIABLE_STORE_HEADER       *VolatileBase;
   EFI_PHYSICAL_ADDRESS        FvVolHdr;
+  EFI_PHYSICAL_ADDRESS        FvHeaderAddress;
   EFI_PHYSICAL_ADDRESS        DataPtr;
   EFI_STATUS                  Status;
 
@@ -294,7 +295,13 @@ UpdateVariableStore (
     Status = Fvb->GetPhysicalAddress(Fvb, &FvVolHdr);
     ASSERT_EFI_ERROR (Status);
 
-    FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *) ((UINTN) FvVolHdr);
+    if (Fvb->GetMappedAddress) {
+      Status = Fvb->GetMappedAddress(Fvb, &FvHeaderAddress);
+      ASSERT_EFI_ERROR (Status);
+      FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *) FvHeaderAddress;
+    } else {
+      FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *) FvVolHdr;
+    }
     //
     // Data Pointer should point to the actual Address where data is to be
     // written.
@@ -3629,6 +3636,7 @@ GetFvbInfoByAddress (
   UINTN                                   HandleCount;
   UINTN                                   Index;
   EFI_PHYSICAL_ADDRESS                    FvbBaseAddress;
+  EFI_PHYSICAL_ADDRESS                    FvbHeaderAddress;
   EFI_FIRMWARE_VOLUME_BLOCK_PROTOCOL      *Fvb;
   EFI_FIRMWARE_VOLUME_HEADER              *FwVolHeader;
   EFI_FVB_ATTRIBUTES_2                    Attributes;
@@ -3668,7 +3676,16 @@ GetFvbInfoByAddress (
       continue;
     }
 
-    FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *) ((UINTN) FvbBaseAddress);
+    if (Fvb->GetMappedAddress) {
+      Status = Fvb->GetMappedAddress(Fvb, &FvbHeaderAddress);
+      if (EFI_ERROR (Status)) {
+        continue;
+      }
+      FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *) FvbHeaderAddress;
+    } else {
+      FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *) FvbBaseAddress;
+    }
+
     if ((Address >= FvbBaseAddress) && (Address < (FvbBaseAddress + FwVolHeader->FvLength))) {
       if (FvbHandle != NULL) {
         *FvbHandle  = HandleBuffer[Index];
