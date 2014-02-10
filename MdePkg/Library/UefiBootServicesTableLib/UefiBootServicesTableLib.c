@@ -18,7 +18,7 @@
 
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/DebugLib.h>
-
+VOID               *gUefiPxePrivate; /* global access by private pxelinux.0 */
 EFI_HANDLE         gImageHandle = NULL;
 EFI_SYSTEM_TABLE   *gST         = NULL;
 EFI_BOOT_SERVICES  *gBS         = NULL;

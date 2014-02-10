@@ -698,6 +698,12 @@ typedef union {
   /// EFI_DEBUG_SUPPORT_PROTOCOL in the UEFI Specification.
   ///
   EFI_SYSTEM_CONTEXT_ARM  SystemContextArm;
+  ///
+  /// The context of the AARCH64 processor when the exception was generated. Type
+  /// EFI_SYSTEM_CONTEXT_AARCH64 is defined in the
+  /// EFI_DEBUG_SUPPORT_PROTOCOL in the UEFI Specification.
+  ///
+  EFI_SYSTEM_CONTEXT_AARCH64  SystemContextAArch64;
 } EFI_STATUS_CODE_EXCEP_SYSTEM_CONTEXT;
 
 ///
