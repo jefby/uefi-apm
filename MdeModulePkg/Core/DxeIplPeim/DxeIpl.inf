@@ -53,8 +53,11 @@
 [Sources.EBC]
   Ebc/DxeLoadFunc.c
 
-[Sources.ARM, Sources.AARCH64]
+[Sources.ARM]
   Arm/DxeLoadFunc.c
+
+[Sources.AARCH64]
+  AArch64/DxeLoadFunc.c
 
 [Packages]
   MdePkg/MdePkg.dec
