@@ -463,8 +463,7 @@ PrepareUEFI (
           Method = fdt_getprop(fdt, cpu_node, "enable-method", &lenp);
           if ( (Method == NULL) || (!AsciiStrCmp((CHAR8 *)Method, "spin-table")) ) {
             fdt_setprop_string(fdt, cpu_node, "enable-method", "spin-table");
-            /* FIXME: we reserve 4 bytes for clusterid and processorid */
-            CpuReleaseAddr = cpu_to_fdtn(ArmCoreInfoTable[Index].MailboxSetAddress + 0x4);
+            CpuReleaseAddr = cpu_to_fdtn(ArmCoreInfoTable[Index].MailboxSetAddress);
             fdt_setprop(fdt, cpu_node, "cpu-release-addr", &CpuReleaseAddr, sizeof(CpuReleaseAddr));
 
             // If it is not the primary core than the cpu should be disabled
@@ -497,7 +496,7 @@ PrepareUEFI (
 
 
   DEBUG_CODE_BEGIN();
-  //DebugDumpFdt ((VOID *)KernelParamsAddress);
+  DebugDumpFdt ((VOID *)KernelParamsAddress);
   PrintMemoryMap();
   DEBUG_CODE_END();
 

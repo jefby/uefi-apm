@@ -36,9 +36,9 @@
 [0004]                      Processor UID : 00000000
 [0004]              Flags (decoded below) : 00000001
                         Processor Enabled : 1
-[0004]           Parking Protocol Version : 00000000
+[0004]           Parking Protocol Version : 00000001
 [0004]              Performance Interrupt : 00000000
-[0008]                     Parked Address : 000000400000f000
+[0008]                     Parked Address : 0000004000008000
 [0008]                       Base Address : 0000000078020000
 
 [0001]                      Subtable Type : 0B [Generic Interrupt Controller]
@@ -48,9 +48,9 @@
 [0004]                      Processor UID : 00000001
 [0004]              Flags (decoded below) : 00000001
                         Processor Enabled : 1
-[0004]           Parking Protocol Version : 00000000
+[0004]           Parking Protocol Version : 00000001
 [0004]              Performance Interrupt : 00000000
-[0008]                     Parked Address : 000000400000f000
+[0008]                     Parked Address : 0000004000009000
 [0008]                       Base Address : 0000000078020000
 
 [0001]                      Subtable Type : 0B [Generic Interrupt Controller]
@@ -60,9 +60,9 @@
 [0004]                      Processor UID : 00000002
 [0004]              Flags (decoded below) : 00000001
                         Processor Enabled : 1
-[0004]           Parking Protocol Version : 00000000
+[0004]           Parking Protocol Version : 00000001
 [0004]              Performance Interrupt : 00000000
-[0008]                     Parked Address : 000000400000f000
+[0008]                     Parked Address : 000000400000a000
 [0008]                       Base Address : 0000000078020000
 
 [0001]                      Subtable Type : 0B [Generic Interrupt Controller]
@@ -72,9 +72,9 @@
 [0004]                      Processor UID : 00000003
 [0004]              Flags (decoded below) : 00000001
                         Processor Enabled : 1
-[0004]           Parking Protocol Version : 00000000
+[0004]           Parking Protocol Version : 00000001
 [0004]              Performance Interrupt : 00000000
-[0008]                     Parked Address : 000000400000f000
+[0008]                     Parked Address : 000000400000b000
 [0008]                       Base Address : 0000000078020000
 
 [0001]                      Subtable Type : 0B [Generic Interrupt Controller]
@@ -84,9 +84,9 @@
 [0004]                      Processor UID : 00000004
 [0004]              Flags (decoded below) : 00000001
                         Processor Enabled : 1
-[0004]           Parking Protocol Version : 00000000
+[0004]           Parking Protocol Version : 00000001
 [0004]              Performance Interrupt : 00000000
-[0008]                     Parked Address : 000000400000f000
+[0008]                     Parked Address : 000000400000c000
 [0008]                       Base Address : 0000000078020000
 
 [0001]                      Subtable Type : 0B [Generic Interrupt Controller]
@@ -96,9 +96,9 @@
 [0004]                      Processor UID : 00000005
 [0004]              Flags (decoded below) : 00000001
                         Processor Enabled : 1
-[0004]           Parking Protocol Version : 00000000
+[0004]           Parking Protocol Version : 00000001
 [0004]              Performance Interrupt : 00000000
-[0008]                     Parked Address : 000000400000f000
+[0008]                     Parked Address : 000000400000d000
 [0008]                       Base Address : 0000000078020000
 
 [0001]                      Subtable Type : 0B [Generic Interrupt Controller]
@@ -108,9 +108,9 @@
 [0004]                      Processor UID : 00000006
 [0004]              Flags (decoded below) : 00000001
                         Processor Enabled : 1
-[0004]           Parking Protocol Version : 00000000
+[0004]           Parking Protocol Version : 00000001
 [0004]              Performance Interrupt : 00000000
-[0008]                     Parked Address : 000000400000f000
+[0008]                     Parked Address : 000000400000e000
 [0008]                       Base Address : 0000000078020000
 
 [0001]                      Subtable Type : 0B [Generic Interrupt Controller]
@@ -120,7 +120,7 @@
 [0004]                      Processor UID : 00000007
 [0004]              Flags (decoded below) : 00000001
                         Processor Enabled : 1
-[0004]           Parking Protocol Version : 00000000
+[0004]           Parking Protocol Version : 00000001
 [0004]              Performance Interrupt : 00000000
 [0008]                     Parked Address : 000000400000f000
 [0008]                       Base Address : 0000000078020000

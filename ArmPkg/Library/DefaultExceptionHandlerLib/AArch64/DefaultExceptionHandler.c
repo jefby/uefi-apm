@@ -108,5 +108,6 @@ DefaultExceptionHandler (
 
   DEBUG ((EFI_D_ERROR, "\n"));
   ASSERT (FALSE);
+  while(1);
 }
 
