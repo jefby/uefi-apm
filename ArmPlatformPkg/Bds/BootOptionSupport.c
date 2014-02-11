@@ -271,6 +271,7 @@ BootDeviceGetType (
     } else if (StrCmp(FDTType, L"a") == 0) {
       *BootType = BDS_LOADER_KERNEL_LINUX_ATAG;
     } else {
+/*      *BootType = BDS_LOADER_KERNEL_LINUX_ATAG; */
       *BootType = BDS_LOADER_KERNEL_LINUX_UEFI; /* FIXME - LHO */
     }
   }

@@ -11,6 +11,7 @@ THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/ 
+#include <Protocol/EmbeddedGpio.h>
 
 #include "PciHostBridge.h"
 #include "XGenePcieCore.h"
@@ -239,6 +240,8 @@ PCI_HOST_BRIDGE_INSTANCE mPciHostBridgeInstanceTemplate = {
   }
 };
 
+EMBEDDED_GPIO *mGPIOHandle;
+
 //
 // Implementation
 //
@@ -268,6 +271,9 @@ InitializePciHostBridge (
  
   mDriverImageHandle = ImageHandle;
 
+  Status = gBS->LocateProtocol(&gEmbeddedGpioProtocolGuid, NULL, (VOID **)&mGPIOHandle);
+  if (FeaturePcdGet(PcdPcieRootBridgeResetGpio))
+	  ASSERT_EFI_ERROR(Status);
 
   XGenePcieSetupHostPre();
   
@@ -278,6 +284,20 @@ InitializePciHostBridge (
     if (!((PcdGet32(PcdPcieRootBridgeMask) >> Loop1) & 0x1)) {
       continue;
     }
+    Status = mGPIOHandle->Set(mGPIOHandle, GPIO(0, (PcdGet64(PcdPcieRootBridgeResetGpioPin) >> (Loop1 * 8)) & 0xFF), GPIO_MODE_OUTPUT_0);
+    if (EFI_ERROR (Status)) {
+      return EFI_DEVICE_ERROR;
+    }
+
+    MicroSecondDelay(1000);
+
+    Status = mGPIOHandle->Set(mGPIOHandle, GPIO(0, (PcdGet64(PcdPcieRootBridgeResetGpioPin) >> (Loop1 * 8)) & 0xFF), GPIO_MODE_OUTPUT_1);
+	if (EFI_ERROR (Status)) {
+	  return EFI_DEVICE_ERROR;
+	}
+
+	MicroSecondDelay(1000);
+
     HostBridge = AllocateCopyPool (sizeof(PCI_HOST_BRIDGE_INSTANCE), &mPciHostBridgeInstanceTemplate);
     if (HostBridge == NULL) {
       return EFI_OUT_OF_RESOURCES;

@@ -13,19 +13,19 @@
 
 #include <Library/PcdLib.h>
 #include <Library/SerialPortLib.h>
-#include <Drivers/DWUart.h>
+#include "DWUart.h"
 
-static UINTN GetSerialPortBase(VOID)
+UINTN GetSerialPortBase(VOID)
 {
   return PcdGet64(PcdSerialRegisterBase);
 }
 
-static UINTN GetSerialPortBaudRate(VOID)
+UINTN GetSerialPortBaudRate(VOID)
 {
   return PcdGet64(PcdUartDefaultBaudRate);
 }
 
-static UINT8 GetSerialPortPolarity(VOID)
+UINT8 GetSerialPortPolarity(VOID)
 {
   return PcdGet8(PcdUartDefaultParity);
 }
@@ -37,7 +37,7 @@ static UINT8 GetSerialPortDataBits(VOID)
 }
 #endif
 
-static UINT8 GetSerialPortStopBits(VOID)
+UINT8 GetSerialPortStopBits(VOID)
 {
   return PcdGet8(PcdUartDefaultStopBits);
 }
@@ -55,10 +55,10 @@ SerialPortInitialize (
   VOID
   )
 {
-  return DWUartInitializePort(GetSerialPortBaudRate(),
-		(EFI_PARITY_TYPE) GetSerialPortPolarity(),
-      		PcdGet8(PcdUartDefaultDataBits),
-      		(EFI_STOP_BITS_TYPE) GetSerialPortStopBits());
+  return DWUartInitializePort( GetSerialPortBaudRate(),
+                (EFI_PARITY_TYPE) GetSerialPortPolarity(),
+                PcdGet8(PcdUartDefaultDataBits),
+                (EFI_STOP_BITS_TYPE) GetSerialPortStopBits());
 }
 
 /**

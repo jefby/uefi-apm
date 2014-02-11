@@ -22,18 +22,25 @@
   LIBRARY_CLASS                  = SerialPortLib
 
 [Sources.common]
+  DWUart.c
   DWSerialPortLib.c
 
 [LibraryClasses]
-  DWUartLib
+  ArmLib
+  IoLib
+  TimerLib
   PcdLib
 
 [Packages]
+  ArmPkg/ArmPkg.dec
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   ArmPlatformPkg/ArmPlatformPkg.dec
+  ArmPlatformPkg/APMXGenePkg/APMXGene.dec
 
 [FixedPcd]
+  gArmPlatformTokenSpaceGuid.PcdAHBCRegisterBase
+  gArmPlatformTokenSpaceGuid.PcdSysClkInHz
   gEfiMdeModulePkgTokenSpaceGuid.PcdSerialRegisterBase
   gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate
   gEfiMdePkgTokenSpaceGuid.PcdUartDefaultDataBits

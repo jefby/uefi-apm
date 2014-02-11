@@ -306,10 +306,10 @@ BootMenuSelectBootOption (
       Print(L"\t- %s\n",DevicePathTxt);
       OptionalData = BdsLoadOption->OptionalData;
       LoaderType = (ARM_BDS_LOADER_TYPE)ReadUnaligned32 ((CONST UINT32*)&OptionalData->Header.LoaderType);
-  if ((BootType == BDS_LOADER_KERNEL_LINUX_ATAG) ||
-      (BootType == BDS_LOADER_KERNEL_LINUX_GLOBAL_FDT) ||
-      (BootType == BDS_LOADER_KERNEL_LINUX_LOCAL_FDT) ||
-      (BootType == BDS_LOADER_KERNEL_LINUX_UEFI)) {
+  if ((LoaderType == BDS_LOADER_KERNEL_LINUX_ATAG) ||
+      (LoaderType == BDS_LOADER_KERNEL_LINUX_GLOBAL_FDT) ||
+      (LoaderType == BDS_LOADER_KERNEL_LINUX_LOCAL_FDT) ||
+      (LoaderType == BDS_LOADER_KERNEL_LINUX_UEFI)) {
         Print (L"\t- Arguments: %a\n",&OptionalData->Arguments.LinuxArguments + 1);
       }
 

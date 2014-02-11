@@ -27,6 +27,9 @@
 #include <DWSPICsr.h>
 #include <APMXGeneAHBCCsr.h>
 
+#define TIMEOUT 0x200000
+#define TIMEOUT_SLEEP 10
+
 extern UINTN
 EFIAPI
 MicroSecondDelay (
@@ -362,10 +365,15 @@ EFI_STATUS DwSpiHostTxDual(IN UINT64 Base, IN UINT8 * Tx1, IN UINT32 Tx1_Cnt, IN
 {
   UINT32 Tx_Pos;
   UINT32 Sr, Old_Ser, Old_Ctrlr0;
-
+  UINT32 Timeout = TIMEOUT;
   /* Wait for previous transfer to complete */ 
 
-  while (DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_BUSY_MASK) ;
+  while (DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_BUSY_MASK) {
+    Timeout--;
+    if (!Timeout)
+      return EFI_DEVICE_ERROR;
+    MicroSecondDelay(TIMEOUT_SLEEP);
+  }
 
   /* Save chip select and disable all Slaves */ 
   Old_Ser = DwSpiHostRead32(DWSPI_SER(Base));
@@ -401,6 +409,7 @@ EFI_STATUS DwSpiHostTxDual(IN UINT64 Base, IN UINT8 * Tx1, IN UINT32 Tx1_Cnt, IN
   /* Enable Slaves to start transfer */ 
   DwSpiHostWrite32(DWSPI_SER(Base), Old_Ser);
   
+  Timeout = TIMEOUT;
   /* Write remaing data to TX FIFO */ 
   while (Tx_Pos < (Tx1_Cnt + Tx2_Cnt)) {
     Sr = DwSpiHostRead32(DWSPI_SR(Base));
@@ -412,14 +421,31 @@ EFI_STATUS DwSpiHostTxDual(IN UINT64 Base, IN UINT8 * Tx1, IN UINT32 Tx1_Cnt, IN
             Tx2[Tx_Pos - Tx1_Cnt]);
       }
       Tx_Pos++;
+    } else {
+      Timeout--;
+      if (!Timeout)
+        return EFI_DEVICE_ERROR;
+      MicroSecondDelay(TIMEOUT_SLEEP);
     }
   } 
 
+  Timeout = TIMEOUT;
   /* Wait till TX FIFO is not empty */ 
-  while (!(DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_TFE_MASK)) ;
+  while (!(DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_TFE_MASK)) {
+    Timeout--;
+    if (!Timeout)
+      return EFI_DEVICE_ERROR;
+    MicroSecondDelay(TIMEOUT_SLEEP);
+  }
   
+  Timeout = TIMEOUT;
   /* Wait for TX to complete */ 
-  while (DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_BUSY_MASK) ;
+  while (DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_BUSY_MASK) {
+    Timeout--;
+    if (!Timeout)
+      return EFI_DEVICE_ERROR;
+    MicroSecondDelay(TIMEOUT_SLEEP);
+  }
   
   /* Restore control registers */ 
   DwSpiHostDisable(Base);
@@ -433,6 +459,7 @@ EFI_STATUS DwSpiHostEepromRead(IN UINT64 Base, IN UINT8 * Tx, IN UINT32 Tx_Cnt, 
 {
   UINT32 Tx_Pos, Rx_Pos;
   UINT32 Sr, Old_Ser, Old_Ctrlr0, Old_Ctrlr1;
+  UINT32 Timeout;
   
   if ((DWSPI_TX_FIFO_DEPTH < Tx_Cnt) || 
         ((DWSPI_CTRLR1_MASK + 1) < Rx_Cnt))
@@ -440,7 +467,13 @@ EFI_STATUS DwSpiHostEepromRead(IN UINT64 Base, IN UINT8 * Tx, IN UINT32 Tx_Cnt, 
   
   /* Wait for previous transfer to complete */ 
   DBG("Wait previous transfer to complete\n");
-  while (DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_BUSY_MASK) ;
+  Timeout = TIMEOUT;
+  while (DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_BUSY_MASK) {
+    Timeout--;
+    if (!Timeout)
+      return EFI_DEVICE_ERROR;
+    MicroSecondDelay(TIMEOUT_SLEEP);
+  }
   
   /* Save chip select and disable all Slaves */ 
   Old_Ser = DwSpiHostRead32(DWSPI_SER(Base));
@@ -461,11 +494,17 @@ EFI_STATUS DwSpiHostEepromRead(IN UINT64 Base, IN UINT8 * Tx, IN UINT32 Tx_Cnt, 
   DBG("Write to TX FIFO\n");
   /* Write to TX FIFO */ 
   Tx_Pos = 0;
+  Timeout = TIMEOUT;
   while (Tx_Pos < Tx_Cnt) {
     Sr = DwSpiHostRead32(DWSPI_SR(Base));
     if (Sr & DWSPI_SR_TFNF_MASK) {
       DwSpiHostWrite32(DWSPI_DR(Base), Tx[Tx_Pos]);
       Tx_Pos++;
+    } else {
+      Timeout--;
+      if (!Timeout)
+        return EFI_DEVICE_ERROR;
+      MicroSecondDelay(TIMEOUT_SLEEP);
     }
   }
 
@@ -486,8 +525,14 @@ EFI_STATUS DwSpiHostEepromRead(IN UINT64 Base, IN UINT8 * Tx, IN UINT32 Tx_Cnt, 
   } 
 
   DBG("Wait for transfer complete\n");
-  /* Wait for transfer complete */ 
-  while (DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_BUSY_MASK) ;
+  /* Wait for transfer complete */
+  Timeout = TIMEOUT;
+  while (DwSpiHostRead32(DWSPI_SR(Base)) & DWSPI_SR_BUSY_MASK) {
+    Timeout--;
+    if (!Timeout)
+      return EFI_DEVICE_ERROR;
+    MicroSecondDelay(TIMEOUT_SLEEP);
+  }
   DBG("DwSpiHostEepromRead exit\n");
   /* Restore control registers */ 
   DwSpiHostDisable(Base);

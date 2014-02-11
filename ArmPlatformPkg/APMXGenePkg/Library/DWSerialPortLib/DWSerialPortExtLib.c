@@ -90,6 +90,7 @@ SerialPortGetControl (
   OUT UINT32                  *Control
   )
 {
-  return 0;
+  *Control = 0;
+  return EFI_SUCCESS;
 }
 

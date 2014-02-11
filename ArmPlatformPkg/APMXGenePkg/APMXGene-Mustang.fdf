@@ -186,6 +186,15 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
   #
+  # USB XHCI Support
+  #
+  INF ArmPlatformPkg/APMXGenePkg/Bus/Usb/UsbControllerDxe/UsbControllerDxe.inf
+  INF MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
+  INF MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
+  INF MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
+  INF MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe.inf
+
+  #
   # Multimedia Card Interface
   #
   INF EmbeddedPkg/Universal/MmcDxe/MmcDxe.inf
@@ -210,6 +219,7 @@ READ_LOCK_STATUS   = TRUE
   #
   # PCI Support
   #
+  INF ArmPlatformPkg/APMXGenePkg/Drivers/GpioDxe/GpioDxe.inf
   INF ArmPlatformPkg/APMXGenePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf
   INF MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
 
@@ -217,15 +227,12 @@ READ_LOCK_STATUS   = TRUE
   #
   # IDE/AHCI Support
   #
-  INF ArmPlatformPkg/APMXGenePkg/Drivers/SataControllerDxe/SataControllerDxe.inf
-  INF ArmPlatformPkg/APMXGenePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
+  INF ArmPlatformPkg/APMXGenePkg/Drivers/SataControllerNewDxe/SataControllerDxe.inf
   INF DuetPkg/SataControllerDxe/SataControllerDxe.inf
   INF MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
   INF MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
   INF MdeModulePkg/Bus/Scsi/ScsiBusDxe/ScsiBusDxe.inf
   INF MdeModulePkg/Bus/Scsi/ScsiDiskDxe/ScsiDiskDxe.inf
-
-  
 
   #
   # UEFI application (Shell Embedded Boot Loader)

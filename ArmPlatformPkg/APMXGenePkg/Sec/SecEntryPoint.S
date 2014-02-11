@@ -15,7 +15,11 @@
 #include <AsmMacroIoLibV8.h>
 
 #define APM88XXX_EFUSE_ADDR			0x1054a000
-#define KERNEL_MAILBOX_ADDR                     0x400000f000
+#ifdef AARCH64_MP_PROTOCOL
+#define KERNEL_MAILBOX_ADDR                     0x4000008000
+#else
+#define KERNEL_MAILBOX_ADDR                     0x400000F000
+#endif
 
 ASM_GLOBAL ASM_PFX(CEntryPoint)
 ASM_GLOBAL ASM_PFX(_ModuleEntryPoint)
@@ -161,6 +165,31 @@ reset_other_regs:
         msr     VBAR_EL2, x0
         msr     VBAR_EL1, x0
 
+exit_to_el1:
+    //ldr  x0, =0x78010f00
+	//ldr  w1, =0x1000000
+	//str  w1, [x0]
+
+    movz    x12, 0
+    movk    x12, 0x8000, LSL #16 /* set rw to 64 bit */
+    msr     HCR_EL2, x12
+    adr     x12, start_ns
+    msr     elr_el2, x12
+    movk    x12, 0xC5            /* C for fast, regular irq disabled, (M=5) 5 is for EL1h */
+    msr     spsr_el2, x12
+    eret
+
+start_ns:
+	mrs     x5, SCTLR_EL1
+	orr     x5, x5, #0x1000         /* Icache enable */
+	orr     x5, x5, #0x4            /* Dcache enable */
+	msr     SCTLR_EL1, x5
+    isb
+
+_InitMem:
+        /* Initialize Init Boot Memory */
+	bl	ASM_PFX(ArmPlatformSecBootMemoryInit)
+
 _IdentifyPrimary:
 	/* SMP - Find primary core - Read PMD disable efuse */
 	ldr	x0, =APM88XXX_EFUSE_ADDR
@@ -183,56 +212,64 @@ done_find_primary_core:
 	/* We don't support multi core tianocore for now */
 	and     x0, x0, #0xFFFF
 	cmp     x0, x1
-	b.eq	exit_to_el1
+	b.eq	primary_core_boot
 
-	/* Secondary wait for signal */
 secondary_core_wait:
-	ldr	x1, =KERNEL_MAILBOX_ADDR
-    ldr x3, =0xFFFFFFFF
-    str     x3, [x1]
-    movz    w4, #0
-    str     w4, [x1, #8]
-1:	wfe
-	ldr    	x3, [x1]
-	/* Fixme: we don't need to check processor ID and Cluster ID here */
-	lsr		x3, x3, #32
-	movz    x4, #0
-	ldr     w4, [x1, #8]
-	orr     x3, x3, x4, LSL #32
+#ifdef AARCH64_MP_PROTOCOL
+	/* Secondary wait for signal */
+	/* enable CPU interrupt interface */
+	ldr  x0, =0x78020004
+	movz w1, #0xFF
+	str  w1, [x0]
+
+	ldr x0, =0x78020000
+	movz w1, #0x1 /* enable group 0. Default SGI should be group 0 */
+	str  w1, [x0]
+
+	mrs     x0, mpidr_el1
+	and     x0, x0, #0xffff
+	mov     x1, x0
+	and     x1, x1, #0x1
+	and     x0, x0, #0xff00
+	ror     x0, x0, #7
+	orr     x0, x0, x1 /* CPU ID */
+
+	ldr	    x1, =KERNEL_MAILBOX_ADDR /* start from 0x4000008000 */
+	movz    x2, 0x1000 /* 4K */
+	madd    x1, x2, x0, x1
+
+    ldr w3, =0xFFFFFFFF
+    str     w3, [x1]
+    movz    x4, #0
+    str     x4, [x1, #8]
+
+1:	wfi
+	ldr     w2, [x1]
+	cmp     w2, w0 /* Check processor ID */
+	b.ne	1b
+
+	ldr     x3, [x1, #8]
 	cbz	    x3, 1b
-	/* ldr    	x4, [x1]
-    and     x4, x4, #0xFFFFFFFF
-    str     x4,[x1]
-    movz    w4, #0
-    str     w4, [x1, #8] */
-	br	    x3				/* branch to the given address */
+	movz    x4, #0
+    str     x4, [x1, #8]
+    mov     x0, x1 /* copy mailbox address to x0 */
+	br	    x3	/* branch to the given address */
 	b	    secondary_core_wait
+#else
+	ldr	    x1, =KERNEL_MAILBOX_ADDR
+    movz    x3, #0
+    str     w3, [x1]
 
-	/* Primary core continue */
-exit_to_el1:
-        movz    x12, 0
-        movk    x12, 0x8000, LSL #16 /* set rw to 64 bit */
-        msr     HCR_EL2, x12
-        adr     x12, start_ns
-        msr     elr_el2, x12
-        movk    x12, 0xC5            /* C for fast, regular irq disabled, (M=5) 5 is for EL1h */
-        msr     spsr_el2, x12
-        eret
+1:	wfe
+	ldr     x3, [x1]
+	cbz	    x3, 1b
+	br	    x3	/* branch to the given address */
+	b	    secondary_core_wait
+#endif
 
-start_ns:
-	mrs     x5, SCTLR_EL1
-	orr     x5, x5, #0x1000         /* Icache enable */
-	orr     x5, x5, #0x4            /* Dcache enable */
-	msr     SCTLR_EL1, x5
-        isb
-
-_InitMem:
-        /* Initialize Init Boot Memory */
-	bl	ASM_PFX(ArmPlatformSecBootMemoryInit)
-
-_IdentifyCpu:
+primary_core_boot:
 	/* Identify CPU ID */
-        mrs	x5, mpidr_el1
+    mrs     x5, mpidr_el1
 	and     x5, x5, #0xF
 
 	mov     x10, #0x1               /* Booting mode is unused as of now */
