@@ -271,7 +271,7 @@ MmcIdentificationMode (
   /* It seems few SD cards need some time to recover from this command? */
   MicroSecondDelay(1000);
 #endif
-  
+
   if (Status == EFI_SUCCESS) {
     DEBUG ((EFI_D_ERROR, "MmcIdentificationMode(MMC_CMD5): Error - SDIO not supported.\n"));
     return EFI_UNSUPPORTED;
@@ -318,7 +318,7 @@ MmcIdentificationMode (
       if (IsHCS) {
         CmdArg |= BIT30;
       }
-      Status = MmcHost->SendCommand (MmcHost, MMC_ACMD41, CmdArg);
+      Status = MmcHost->SendCommand (MmcHost, MMC_ACMD41, CmdArg, NULL);
       if (!EFI_ERROR (Status)) {
         MmcHost->ReceiveResponse (MmcHost, MMC_RESPONSE_TYPE_OCR, Response);
         ((UINT32 *) &(MmcHostInstance->CardInfo.OCRData))[0] = Response[0];
@@ -552,7 +552,7 @@ MmcStopTransmission (
   UINT32                  Response[4];
   // Command 12 - Stop transmission (ends read or write)
   // Normally only needed for streaming transfers or after error.
-  Status = MmcHost->SendCommand (MmcHost, MMC_CMD12, 0);
+  Status = MmcHost->SendCommand (MmcHost, MMC_CMD12, 0, NULL);
   if (!EFI_ERROR (Status)) {
     MmcHost->ReceiveResponse (MmcHost, MMC_RESPONSE_TYPE_R1b, Response);
   }
@@ -740,7 +740,7 @@ MmcIoBlocks (
     while(   (!(Response[0] & MMC_R0_READY_FOR_DATA))
           && (MMC_R0_CURRENTSTATE (Response) != MMC_R0_STATE_TRAN)
           && Timeout--) {
-      Status = MmcHost->SendCommand (MmcHost, MMC_CMD13, CmdArg);
+      Status = MmcHost->SendCommand (MmcHost, MMC_CMD13, CmdArg, NULL);
       if (!EFI_ERROR (Status)) {
         MmcHost->ReceiveResponse (MmcHost, MMC_RESPONSE_TYPE_R1, Response);
         if ((Response[0] & MMC_R0_READY_FOR_DATA)) {
@@ -748,6 +748,7 @@ MmcIoBlocks (
         }
       }
       NanoSecondDelay (100);
+    }
 
     if (BlockCount > 1) {
 	    // Command 12 - Stop transmission (ends read)
