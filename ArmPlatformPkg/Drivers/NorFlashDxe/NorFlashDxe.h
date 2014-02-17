@@ -418,23 +418,7 @@ NorFlashWriteSingleBlock (
   IN UINT32                 BlockSizeInWords
   );
 
-EFI_STATUS
-NorFlashWriteBuffer (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN UINTN                  TargetAddress,
-  IN UINTN                  BufferSizeInBytes,
-  IN UINT32                 *Buffer
-  );
-
 #else
-
-EFI_STATUS
-NorFlashWriteBuffer (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN UINTN                  TargetAddress,
-  IN UINTN                  BufferSizeInBytes,
-  IN UINT8                  *Buffer
-  );
 
 EFI_STATUS
 NorFlashWriteMultipleBuffers (

@@ -379,7 +379,6 @@ NorFlashBlockIsLocked (
   IN UINTN                  BlockAddress
   )
 {
-  UINT32                LockStatus;
   BOOLEAN               BlockIsLocked;
 
 #if !defined(APM_XGENE_GFC_FLASH) && !defined(APM_XGENE_SPI_FLASH)
