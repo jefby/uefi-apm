@@ -48,7 +48,7 @@
   RegDumpLib|ArmPlatformPkg/APMXGenePkg/Library/APMXGeneRegDumpLib/APMXGeneRegDump.inf
 
   # ARM PL390 General Interrupt Driver in Secure and Non-secure
-  ArmGicLib|ArmPkg/Drivers/PL390Gic/PL390GicLib.inf
+  ArmGicLib|ArmPkg/Drivers/ArmGic/ArmGicLib.inf
 
   TimerLib|ArmPkg/Library/ArmArchTimerLib/ArmArchTimerLib.inf
 
@@ -68,8 +68,8 @@
   # Uncomment to turn on GDB stub in SEC.
   #DebugAgentLib|EmbeddedPkg/Library/GdbDebugAgent/GdbDebugAgent.inf
 
-  #ArmGicSecLib|ArmPkg/Drivers/PL390Gic/PL390GicSecLib.inf
-  #ArmGicLib|ArmPkg/Drivers/PL390Gic/PL390GicSecLib.inf
+  #ArmGicSecLib|ArmPkg/Drivers/ArmGic/ArmGicSecLib.inf
+  #ArmGicLib|ArmPkg/Drivers/ArmGic/ArmGicSecLib.inf
 
 [BuildOptions]
   #
@@ -104,11 +104,10 @@
    #
    gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeResetGpio|TRUE
 
-[PcdsDynamicDefault.common]
+[PcdsFixedAtBuild.common]
    # System Memory (4GB)
    gArmTokenSpaceGuid.PcdSystemMemorySize|0x100000000
 
-[PcdsFixedAtBuild.common]
    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"1.0.0"
    gArmPlatformTokenSpaceGuid.PcdFirmwareVendor|"X-Gene Mustang Board"
    gEmbeddedTokenSpaceGuid.PcdEmbeddedPrompt|"Mustang"
@@ -322,7 +321,7 @@
 
    MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
 
-   ArmPkg/Drivers/PL390Gic/PL390GicDxe.inf
+   ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
    ArmPkg/Drivers/TimerDxe/TimerDxe.inf
    MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
 
@@ -342,7 +341,7 @@
    #
    MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
    MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
-   FatPkg/EnhancedFatDxe/Fat.inf
+   FatBinPkg/EnhancedFatDxe/Fat.inf
    MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
    #
@@ -388,7 +387,7 @@
    #
    MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
    MdeModulePkg/Universal/Acpi/AcpiPlatformDxe/AcpiPlatformDxe.inf
-   ArmPlatformPkg/APMXGenePkg/AcpiTables/AcpiTables.inf
+   ArmPkg/Drivers/AcpiTables/APMXGene/AcpiTables.inf
 
    #
    # Bds

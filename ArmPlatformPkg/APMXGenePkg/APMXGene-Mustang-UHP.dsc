@@ -48,7 +48,7 @@
   RegDumpLib|ArmPlatformPkg/APMXGenePkg/Library/APMXGeneRegDumpLib/APMXGeneRegDump.inf
 
   # ARM PL390 General Interrupt Driver in Secure and Non-secure
-  ArmGicLib|ArmPkg/Drivers/PL390Gic/PL390GicLib.inf
+  ArmGicLib|ArmPkg/Drivers/ArmGic/ArmGicLib.inf
 
   TimerLib|ArmPkg/Library/ArmArchTimerLib/ArmArchTimerLib.inf
 
@@ -68,8 +68,8 @@
   # Uncomment to turn on GDB stub in SEC.
   #DebugAgentLib|EmbeddedPkg/Library/GdbDebugAgent/GdbDebugAgent.inf
 
-  #ArmGicSecLib|ArmPkg/Drivers/PL390Gic/PL390GicSecLib.inf
-  #ArmGicLib|ArmPkg/Drivers/PL390Gic/PL390GicSecLib.inf
+  #ArmGicSecLib|ArmPkg/Drivers/ArmGic/ArmGicSecLib.inf
+  #ArmGicLib|ArmPkg/Drivers/ArmGic/ArmGicSecLib.inf
 
 [BuildOptions]
   GCC:*_*_AARCH64_ARCHCC_FLAGS = -mgeneral-regs-only -DARM_CPU_AARCH64 -DAPM_XGENE -DAPM_XGENE_SPI_FLASH -DAPM_XGENE_UHP=0x100000000
@@ -334,7 +334,7 @@
    MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
    #MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
 
-   ArmPkg/Drivers/PL390Gic/PL390GicDxe.inf
+   ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
    ArmPkg/Drivers/TimerDxe/TimerDxe.inf
    MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
 
