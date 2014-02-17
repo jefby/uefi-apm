@@ -43,6 +43,7 @@
   HobLib
   ArmLib
   ArmPlatformLib
+  PcdLib
 
 [Guids]
   gEfiMemoryTypeInformationGuid
