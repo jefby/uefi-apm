@@ -68,6 +68,9 @@
   # Define if the Power State Coordination Interface (PSCI) is supported by the Platform Trusted Firmware
   gArmTokenSpaceGuid.PcdArmPsciSupport|FALSE|BOOLEAN|0x00000033
   
+[PcdsDynamic.common]
+  gArmTokenSpaceGuid.PcdSystemMemorySize|0|UINT64|0x0000002A
+  
 [PcdsFixedAtBuild.common]
   gArmTokenSpaceGuid.PcdTrustzoneSupport|FALSE|BOOLEAN|0x00000006
 
@@ -111,11 +114,18 @@
   gArmTokenSpaceGuid.PcdHypFvBaseAddress|0|UINT32|0x0000003C
   gArmTokenSpaceGuid.PcdHypFvSize|0|UINT32|0x0000003D
 
+  # Non Secure Access Control Register
+  # - BIT15 : NSASEDIS - Disable Non-secure Advanced SIMD functionality
+  # - BIT14 : NSD32DIS - Disable Non-secure use of D16-D31
+  # - BIT11 : cp11 - Non-secure access to coprocessor 11 enable
+  # - BIT10 : cp10 - Non-secure access to coprocessor 10 enable
+  # 0xC00 = cp10 | cp11
+  gArmTokenSpaceGuid.PcdArmNsacr|0xC00|UINT32|0x00000039
+
   # System Memory (DRAM): These PCDs define the region of in-built system memory
   # Some platforms can get DRAM extensions, these additional regions will be declared
   # to UEFI by ArmPLatformPlib   
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0|UINT64|0x00000029
-  gArmTokenSpaceGuid.PcdSystemMemorySize|0|UINT64|0x0000002A
 
   # Use ClusterId + CoreId to identify the PrimaryCore
   gArmTokenSpaceGuid.PcdArmPrimaryCoreMask|0xF03|UINT32|0x00000031
@@ -167,22 +177,13 @@
 
   # The Linux ATAGs are expected to be under 0x4000 (16KB) from the beginning of the System Memory
   gArmTokenSpaceGuid.PcdArmLinuxAtagMaxOffset|0x4000|UINT32|0x00000020
-  gArmTokenSpaceGuid.PcdArmLinuxFdtMaxOffset|0x07000000|UINT32|0x00000021
 
   # If the fixed FDT address is not available, then it should be loaded below the kernel.
   # The recommendation from the Linux kernel is to have the FDT below 16KB.
   # (see the kernel doc: Documentation/arm/Booting)
-  #gArmTokenSpaceGuid.PcdArmLinuxFdtMaxOffset|0x4000|UINT32|0x00000023
+  gArmTokenSpaceGuid.PcdArmLinuxFdtMaxOffset|0x4000|UINT32|0x00000023
   # The FDT blob must be loaded at a 64bit aligned address.
   gArmTokenSpaceGuid.PcdArmLinuxFdtAlignment|0x8|UINT32|0x00000026
-
-  # Non Secure Access Control Register
-  # - BIT15 : NSASEDIS - Disable Non-secure Advanced SIMD functionality
-  # - BIT14 : NSD32DIS - Disable Non-secure use of D16-D31
-  # - BIT11 : cp11 - Non-secure access to coprocessor 11 enable
-  # - BIT10 : cp10 - Non-secure access to coprocessor 10 enable
-  # 0xC00 = cp10 | cp11
-  gArmTokenSpaceGuid.PcdArmNsacr|0xC00|UINT32|0x00000039
 
 [PcdsFixedAtBuild.AARCH64]
   #
@@ -206,14 +207,6 @@
   # - BIT13: TWE - Trap WFE
   # 0x501 = NS | HCE | RW
   gArmTokenSpaceGuid.PcdArmScr|0x501|UINT32|0x00000038
-
-  # Non Secure Access Control Register
-  # - BIT15 : NSASEDIS - Disable Non-secure Advanced SIMD functionality
-  # - BIT14 : NSD32DIS - Disable Non-secure use of D16-D31
-  # - BIT11 : cp11 - Non-secure access to coprocessor 11 enable
-  # - BIT10 : cp10 - Non-secure access to coprocessor 10 enable
-  # 0xC00 = cp10 | cp11
-  gArmTokenSpaceGuid.PcdArmNsacr|0xC00|UINT32|0x00000039
 
   # By default we do transition to EL2 non-secure mode with Stack for EL2.
   #        Mode Description              Bits

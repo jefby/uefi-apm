@@ -1179,13 +1179,13 @@ WriteRelocations64 (
             // AArch64 GCC uses RELA relocation, so all relocations has to be fixed up. ARM32 uses REL.
             switch (ELF_R_TYPE(Rel->r_info)) {
             case R_AARCH64_LD_PREL_LO19:
-		break;
+              break;
 
             case R_AARCH64_CALL26:
-		break;
+              break;
 
             case R_AARCH64_JUMP26:
-		break;
+              break;
 
             case R_AARCH64_ADR_PREL_PG_HI21:
 #if !defined(ENABLE_AARCH64_RELOCATION_SUPPORT)

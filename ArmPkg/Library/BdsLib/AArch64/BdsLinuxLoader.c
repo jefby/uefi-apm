@@ -137,7 +137,7 @@ StartLinux (
   }
 
   // Check if the Linux Image is a uImage
-  if (*(UINTN*)LinuxKernel == LINUX_UIMAGE_SIGNATURE) {
+  if (*(UINT32 *)LinuxKernel == LINUX_UIMAGE_SIGNATURE) {
     // Assume the Image Entry Point is just after the uImage header (64-byte size)
     LinuxKernel = (LINUX_KERNEL64)((UINTN)LinuxKernel + 64);
     LinuxImageSize -= 64;

@@ -2340,7 +2340,6 @@ AhciModeInitialization (
         AhciAndReg (PciIo, Offset, (UINT32) ~(EFI_AHCI_PORT_CMD_SUD));
         continue;
       }
-
       //
       // According to SATA1.0a spec section 5.2, we need to wait for PxTFD.BSY and PxTFD.DRQ
       // and PxTFD.ERR to be zero. The maximum wait time is 16s which is defined at ATA spec.
@@ -2365,7 +2364,6 @@ AhciModeInitialization (
       if (PhyDetectDelay == 0) {
         continue;
       }
-
       //
       // When the first D2H register FIS is received, the content of PxSIG register is updated.
       //

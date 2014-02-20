@@ -117,7 +117,7 @@ InitializeFvAndVariableStoreHeaders (
   FirmwareVolumeHeader->BlockMap[1].NumBlocks = 0;
   FirmwareVolumeHeader->BlockMap[1].Length      = 0;
   FirmwareVolumeHeader->Checksum = CalculateCheckSum16 ((UINT16*)FirmwareVolumeHeader,
-		  	  	  FirmwareVolumeHeader->HeaderLength);
+                                  FirmwareVolumeHeader->HeaderLength);
 
   //
   // VARIABLE_STORE_HEADER
@@ -153,13 +153,13 @@ ValidateFvHeader (
   EFI_FIRMWARE_VOLUME_HEADER  *FwVolHeader;
   VARIABLE_STORE_HEADER       *VariableStoreHeader;
   UINTN                       VariableStoreLength;
-  UINTN			      FvLength;
+  UINTN                       FvLength;
   UINT8                       *Buffer;
   UINTN                       NumRead;
-  UINTN 		      TotalRead;
+  UINTN                       TotalRead;
 
   TotalRead = sizeof (EFI_FIRMWARE_VOLUME_HEADER)  + sizeof(EFI_FV_BLOCK_MAP_ENTRY) +
-		  sizeof(VARIABLE_STORE_HEADER);
+                sizeof(VARIABLE_STORE_HEADER);
   NumRead = TotalRead;
   if (NumRead > MAX_RUNTIME_BUFFER_SIZE) {
     DEBUG ((EFI_D_ERROR, "ValidateFvHeader: Out of resource\n"));
@@ -168,7 +168,7 @@ ValidateFvHeader (
   Buffer = TmpRuntimeBuffer;
 
   FvbRead (&Instance->FvbProtocol, (EFI_LBA)0,
-		  	  	  0, &NumRead, Buffer);
+              0, &NumRead, Buffer);
 
   if (NumRead != TotalRead) {
       DEBUG ((EFI_D_ERROR, "ValidateFvHeader: Read Firmware Volume header failed\n"));
@@ -540,7 +540,7 @@ FvbRead (
 
   for (Tmp = 0; Tmp < *NumBytes; Tmp += ChunkSize) {
     ChunkSize = MIN(BlockSize - Offset, *NumBytes - Tmp);
-    // Read NOR Flash data into shadow buffer
+  // Read NOR Flash data into shadow buffer
     TempStatus = NorFlashReadBlocks (Instance, Instance->StartLba + Lba + Tmp/BlockSize , BlockSize, BlockBuffer);
   if (EFI_ERROR (TempStatus)) {
     // Return one of the pre-approved error statuses
@@ -686,29 +686,28 @@ FvbWrite (
   }
 
   for (Tmp = 0; Tmp < *NumBytes; Tmp += ChunkSize) {
-	  ChunkSize = MIN(BlockSize - Offset, *NumBytes - Tmp);
-	  if (ChunkSize < BlockSize) {
-		  // Read NOR Flash data into shadow buffer
-		  TempStatus = NorFlashReadBlocks (Instance, Instance->StartLba + Lba + Tmp/BlockSize , BlockSize, BlockBuffer);
-		  if (EFI_ERROR (TempStatus)) {
-			  // Return one of the pre-approved error statuses
-			  Status = EFI_DEVICE_ERROR;
-			  goto FREE_MEMORY;
-		  }
-	  }
+    ChunkSize = MIN(BlockSize - Offset, *NumBytes - Tmp);
+    if (ChunkSize < BlockSize) {
+      // Read NOR Flash data into shadow buffer
+      TempStatus = NorFlashReadBlocks (Instance, Instance->StartLba + Lba + Tmp/BlockSize , BlockSize, BlockBuffer);
+      if (EFI_ERROR (TempStatus)) {
+        // Return one of the pre-approved error statuses
+        Status = EFI_DEVICE_ERROR;
+        goto FREE_MEMORY;
+      }
+    }
 
-	  // Put the data at the appropriate location inside the buffer area
-	  CopyMem((BlockBuffer + Offset), Buffer + Tmp, ChunkSize);
+  // Put the data at the appropriate location inside the buffer area
+    CopyMem((BlockBuffer + Offset), Buffer + Tmp, ChunkSize);
 
-	  // Write the modified buffer back to the NorFlash
-	  Status = NorFlashWriteBlocks (Instance, Instance->StartLba + Lba + Tmp/BlockSize, BlockSize, BlockBuffer);
-	  if (EFI_ERROR (TempStatus)) {
-		  // Return one of the pre-approved error statuses
-		  Status = EFI_DEVICE_ERROR;
-		  goto FREE_MEMORY;
-	  }
-	  Offset = 0;
-
+  // Write the modified buffer back to the NorFlash
+    TempStatus = NorFlashWriteBlocks (Instance, Instance->StartLba + Lba + Tmp/BlockSize, BlockSize, BlockBuffer);
+    if (EFI_ERROR (TempStatus)) {
+      // Return one of the pre-approved error statuses
+      Status = EFI_DEVICE_ERROR;
+      goto FREE_MEMORY;
+    }
+    Offset = 0;
   }
 
 FREE_MEMORY:
@@ -900,7 +899,7 @@ NorFlashFvbInitialize (
     Status = ValidateFvHeader (Instance);
   }
 
-  // Install the Default FVB header if required
+  // Install the Default FVB header if required  
   if (EFI_ERROR(Status)) {
     // There is no valid header, so time to install one.
     DEBUG((EFI_D_ERROR,"NorFlashFvbInitialize: ERROR - The FVB Header is not valid. Installing a correct one for this volume.\n"));

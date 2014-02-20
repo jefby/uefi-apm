@@ -27,7 +27,7 @@
 
 #define SEC_OCM_LOAD_ADDR    		(0x1D000000)
 #define SEC_OCM_FIRST_LOAD_SIZE   	(0x8000) /* 32 KB of OCM */
-
+#define CNTCR_BASE (0x10580000)
 #define SerialPrint(txt)  SerialPortWrite ((UINT8*)txt, AsciiStrLen(txt)+1);
 
 extern RETURN_STATUS
@@ -120,6 +120,7 @@ CEntryPoint (
   CHAR8           Buffer[80];
   UINTN           CharCount;
   UINTN           JumpAddress;
+  UINT32          Val;
 #if defined(APM_XGENE_BOOT_SPI_NOR) && !defined(APM_XGENE_VHP)
   CHAR8           UEFIImageName_Sec[16];
 #endif
@@ -240,6 +241,10 @@ CEntryPoint (
   ArmWriteCpacr (CPACR_CP_FULL_ACCESS);
 
   // Setup arch timer
+  // enable counter
+  Val = *(volatile UINT32 *)CNTCR_BASE;
+  Val |= 1;
+  *(volatile UINT32 *)CNTCR_BASE = Val;
   TimerConstructor();
 
   // Initialize peripherals that must be done at the early stage

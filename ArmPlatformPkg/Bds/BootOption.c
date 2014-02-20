@@ -14,7 +14,6 @@
 
 #include <Guid/ArmGlobalVariableHob.h>
 #include "BdsInternal.h"
-#include <Library/NorFlashPlatformLib.h>
 
 extern EFI_HANDLE mImageHandle;
 
@@ -104,7 +103,7 @@ BootOptionStart (
       InitrdSize = ReadUnaligned16 ((CONST UINT16*)&LinuxArguments->InitrdSize);
 
       if (InitrdSize > 0) {
-        Initrd = GetAlignedDevicePath ((EFI_DEVICE_PATH*)((EFI_PHYSICAL_ADDRESS)(LinuxArguments + 1) + CmdLineSize));
+        Initrd = GetAlignedDevicePath ((EFI_DEVICE_PATH*)((UINTN)(LinuxArguments + 1) + CmdLineSize));
       } else {
         Initrd = NULL;
       }

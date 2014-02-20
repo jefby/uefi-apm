@@ -1,6 +1,6 @@
 /** @file
   Pei Core Main Entry Point
-  
+
 Copyright (c) 2006 - 2013, Intel Corporation. All rights reserved.<BR>
 This program and the accompanying materials
 are licensed and made available under the terms and conditions of the BSD License
@@ -46,7 +46,7 @@ EFI_PEI_SERVICES  gPs = {
   PeiFfsFindNextFile,
   PeiFfsFindSectionData,
 
-  PeiInstallPeiMemory,      
+  PeiInstallPeiMemory,
   PeiAllocatePages,
   PeiAllocatePool,
   (EFI_PEI_COPY_MEM)CopyMem,
@@ -68,7 +68,7 @@ EFI_PEI_SERVICES  gPs = {
 
 /**
   Shadow PeiCore module from flash to installed memory.
-  
+
   @param PrivateData    PeiCore's private data structure
 
   @return PeiCore function address after shadowing.
@@ -189,7 +189,7 @@ PeiCore (
       // Initialize libraries that the PEI Core is linked against
       //
       ProcessLibraryConstructorList (NULL, (CONST EFI_PEI_SERVICES **)&OldCoreData->Ps);
-      
+
       //
       // Fixup for PeiService's address
       //
@@ -224,7 +224,7 @@ PeiCore (
       // Indicate that PeiCore reenter
       //
       OldCoreData->PeimDispatcherReenter = TRUE;
-      
+
       if (PcdGet64(PcdLoadModuleAtFixAddressEnable) != 0 && (OldCoreData->HobList.HandoffInformationTable->BootMode != BOOT_ON_S3_RESUME)) {
         //
         // if Loading Module at Fixed Address is enabled, allocate the PEI code memory range usage bit map array.
@@ -238,12 +238,12 @@ PeiCore (
       // PEI Core and PEIMs to get high performance.
       //
       OldCoreData->ShadowedPeiCore = ShadowPeiCore (OldCoreData);
-      
+
       //
       // PEI Core has now been shadowed to memory.  Restart PEI Core in memory.
       //
       OldCoreData->ShadowedPeiCore (SecCoreData, PpiList, OldCoreData);
-      
+
       //
       // Should never reach here.
       //
@@ -261,13 +261,13 @@ PeiCore (
 
     CpuIo = (VOID*)PrivateData.ServiceTableShadow.CpuIo;
     PciCfg = (VOID*)PrivateData.ServiceTableShadow.PciCfg;
-    
+
     CopyMem (&PrivateData.ServiceTableShadow, &gPs, sizeof (gPs));
-    
+
     PrivateData.ServiceTableShadow.CpuIo  = CpuIo;
     PrivateData.ServiceTableShadow.PciCfg = PciCfg;
   }
-  
+
   //
   // Cache a pointer to the PEI Services Table that is either in temporary memory or permanent memory
   //
@@ -285,12 +285,12 @@ PeiCore (
 
   //
   // Initialize PEI Core Services
-  //  
+  //
   InitializeMemoryServices   (&PrivateData,    SecCoreData, OldCoreData);
   InitializePpiServices      (&PrivateData,    OldCoreData);
-  
+
   //
-  // Update performance measurements 
+  // Update performance measurements
   //
   if (OldCoreData == NULL) {
     PERF_START (NULL, "SEC", NULL, 1);
@@ -309,14 +309,14 @@ PeiCore (
 
   //
   // Complete PEI Core Service initialization
-  //  
+  //
   InitializeSecurityServices (&PrivateData.Ps, OldCoreData);
   InitializeDispatcherData   (&PrivateData,    OldCoreData, SecCoreData);
   InitializeImageServices    (&PrivateData,    OldCoreData);
 
   //
   // Perform PEI Core Phase specific actions
-  //  
+  //
   if (OldCoreData == NULL) {
     //
     // Report Status Code EFI_SW_PC_INIT
@@ -325,7 +325,7 @@ PeiCore (
       EFI_PROGRESS_CODE,
       (EFI_SOFTWARE_PEI_CORE | EFI_SW_PC_INIT)
       );
-      
+
     //
     // If SEC provided any PPI services to PEI, install them.
     //

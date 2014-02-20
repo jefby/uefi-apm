@@ -27,7 +27,6 @@ GCC_ASM_IMPORT(ArmPlatformGetCorePosition)
 GCC_ASM_IMPORT(ArmPlatformGetPrimaryCoreMpId)
 
 GCC_ASM_IMPORT(gPcd_FixedAtBuild_PcdCoreCount)
-GCC_ASM_IMPORT(_gPcd_FixedAtBuild_PcdArmPrimaryCore)
 
 //VOID
 //ArmPlatformStackSet (

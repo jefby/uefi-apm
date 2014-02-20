@@ -30,6 +30,12 @@
   ArmPlatformPkg/ArmPlatformPkg.dec
 
 [LibraryClasses]
+  UefiRuntimeLib
+  DxeServicesTableLib
   IoLib
   DebugLib
   BaseLib
+
+[Guids]
+  gEfiEventVirtualAddressChangeGuid               ## CONSUMES ## Event
+

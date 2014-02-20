@@ -97,6 +97,10 @@
    #
    gArmPlatformTokenSpaceGuid.PcdPcieRootBridgeResetGpio|TRUE
 
+[PcdsDynamicDefault.common]
+   # System Memory (4GB)
+   gArmTokenSpaceGuid.PcdSystemMemorySize|0x100000000
+
 [PcdsFixedAtBuild.common]
    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"1.0.0"
    gArmPlatformTokenSpaceGuid.PcdFirmwareVendor|"X-Gene Mustang Board"
@@ -105,9 +109,6 @@
 
    # Memory base start at 0x40.00000000 and above
    gArmTokenSpaceGuid.PcdSystemMemoryBase|0x4000000000
-
-   # System Memory (4GB)
-   gArmTokenSpaceGuid.PcdSystemMemorySize|0x100000000
 
    #
    # NV Storage PCDs. Use base of 0x0780000 for NOR0
@@ -197,8 +198,8 @@
    gArmTokenSpaceGuid.PcdArmLinuxInitrdMaxOffset|0x04000000
 
    # Use the serial console (ConIn & ConOut) and the Graphic driver (ConOut)
-   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(9600,8,N,1)/VenPcAnsi()"
-   gArmPlatformTokenSpaceGuid.PcdDefaultConInPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(9600,8,N,1)/VenPcAnsi()"
+   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8, N,1)/VenPcAnsi()"
+   gArmPlatformTokenSpaceGuid.PcdDefaultConInPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8, N,1)/VenPcAnsi()"
    gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|5
 
    #
@@ -340,7 +341,6 @@
    #
    MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
    MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
-   #FatBinPkg/EnhancedFatDxe/Fat.inf
    MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
    #

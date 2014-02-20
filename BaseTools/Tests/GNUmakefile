@@ -17,5 +17,5 @@ test:
 	@python RunTests.py
 
 clean:
-	find . -name '*.pyc' -exec rm -f '{}' ';'
+	find . -name '*.pyc' -exec rm '{}' ';'
 

@@ -259,7 +259,7 @@ BootDeviceGetType (
     }
     *BootType = BDS_LOADER_EFI_APPLICATION;
   } else {
-    Print(L"Boot Type: [a] ATAGS, [g] Global FDT or [l] Local FDT? [a/g/l] ");
+    Print(L"Boot Type: [a] ATAGS, [u] UEFI, [g] Global FDT or [l] Local FDT? [a/u/g/l] ");
     Status = GetHIInputStr (FDTType, LOCAL_FDT_RESPONSE_LEN );
     if (EFI_ERROR(Status)) {
       return EFI_ABORTED;
@@ -271,8 +271,7 @@ BootDeviceGetType (
     } else if (StrCmp(FDTType, L"a") == 0) {
       *BootType = BDS_LOADER_KERNEL_LINUX_ATAG;
     } else {
-/*      *BootType = BDS_LOADER_KERNEL_LINUX_ATAG; */
-      *BootType = BDS_LOADER_KERNEL_LINUX_UEFI; /* FIXME - LHO */
+      *BootType = BDS_LOADER_KERNEL_LINUX_UEFI; /* FIXME - TPHAN */
     }
   }
 
@@ -400,7 +399,7 @@ BdsLoadOptionFileSystemUpdateDevicePath (
   DevicePath = DuplicateDevicePath (OldDevicePath);
 
   EndingDevicePath = (FILEPATH_DEVICE_PATH*)GetLastDevicePathNode (DevicePath);
-
+ 
   Print(L"File path of the %s: ", FileName);
   StrnCpy (BootFilePath, EndingDevicePath->PathName, BOOT_DEVICE_FILEPATH_MAX);
   Status = EditHIInputStr (BootFilePath, BOOT_DEVICE_FILEPATH_MAX);

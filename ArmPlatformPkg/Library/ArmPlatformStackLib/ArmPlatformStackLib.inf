@@ -38,8 +38,3 @@
 
 [FixedPcd]
   gArmPlatformTokenSpaceGuid.PcdCoreCount
-
-  gArmPlatformTokenSpaceGuid.PcdCoreCount
-
-  gArmTokenSpaceGuid.PcdArmPrimaryCoreMask
-  gArmTokenSpaceGuid.PcdArmPrimaryCore

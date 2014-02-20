@@ -50,7 +50,7 @@ COMPONENT_TYPE  = LIBRARY
 
 [sources.AARCH64]
   Dummy.c
-
+  
 [includes.common]
   $(EDK_SOURCE)/Foundation
   $(EDK_SOURCE)/Foundation/Framework

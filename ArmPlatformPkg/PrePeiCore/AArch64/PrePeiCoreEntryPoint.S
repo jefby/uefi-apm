@@ -16,8 +16,6 @@
 #include <Library/PcdLib.h>
 #include <AutoGen.h>
 
-#define APM88XXX_EFUSE_ADDR			0x1054a000
-
 .text
 .align 3
 
@@ -68,8 +66,7 @@ ASM_PFX(MainEntryPoint):
   bl    ASM_PFX(ArmPlatformIsPrimaryCore)
 
   // Get the top of the primary stacks (and the base of the secondary stacks)
-  // NOTE: Can not use LoadConstantToReg due to assembly compiler not support ULL
-  LoadConstantToReg (FixedPcdGet64(PcdCPUCoresStackBase), x1)
+  LoadConstantToReg (FixedPcdGet32(PcdCPUCoresStackBase), x1)
   LoadConstantToReg (FixedPcdGet32(PcdCPUCorePrimaryStackSize), x2)
   add   x1, x1, x2
 
@@ -95,9 +92,7 @@ _SetupSecondaryCoreStack:
 
 _PrepareArguments:
   // The PEI Core Entry Point has been computed by GenFV and stored in the second entry of the Reset Vector
-  // NOTE: Can not use LoadConstantToReg due to assembly compiler not support ULL
   LoadConstantToReg (FixedPcdGet64(PcdFvBaseAddress), x2)
-
   add   x2, x2, #8
   ldr   x1, [x2]
 

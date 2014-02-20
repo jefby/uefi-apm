@@ -655,4 +655,30 @@ int apm_ptree_node_config(u8 port, struct ptree_node *node);
 #define KN_PRI_SIZE     0x7
 #define KN_PTR_SIZE     0x3FF
 
+#ifndef bswap16
+UINT16
+bswap16(UINT16 x);
+#endif
+
+#ifndef bswap32
+UINT32
+bswap32(UINT32 x);
+#endif
+
+#ifndef ntohl
+#define ntohl(x)  bswap32((uint32_t)(x))
+#endif
+
+#ifndef ntohs
+#define ntohs(x)  bswap16((uint16_t)(x))
+#endif
+
+#ifndef htonl
+#define htonl(x)  bswap32((uint32_t)(x))
+#endif
+
+#ifndef htons
+#define htons(x)  bswap16((uint16_t)(x))
+#endif
+
 #endif	/* __APM_PRECLASS_DATA_H__  */

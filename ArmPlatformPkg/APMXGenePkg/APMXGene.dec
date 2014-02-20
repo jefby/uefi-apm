@@ -199,5 +199,4 @@
 
   gArmPlatformTokenSpaceGuid.PcdKernMailboxAddr|0|UINT64|0x0000007B
   gArmPlatformTokenSpaceGuid.PcdTTBBaseAddr|0|UINT64|0x0000007C
-  
-  
+  gArmPlatformTokenSpaceGuid.PcdApmRtcBase|0x10510000|UINT32|0x0000007E

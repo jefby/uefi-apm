@@ -44,12 +44,14 @@
 [FeaturePcd]
   gEmbeddedTokenSpaceGuid.PcdPrePiProduceMemoryTypeInformationHob
 
+[Pcd]
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+
 [FixedPcd]
   gArmTokenSpaceGuid.PcdFdBaseAddress
   gArmTokenSpaceGuid.PcdFdSize
 
   gArmTokenSpaceGuid.PcdSystemMemoryBase
-  gArmTokenSpaceGuid.PcdSystemMemorySize
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize
   
   gEmbeddedTokenSpaceGuid.PcdMemoryTypeEfiACPIReclaimMemory
