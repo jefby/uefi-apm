@@ -849,7 +849,7 @@ int apm_set_ptree_node_branch(u8 port, u8 node_index,
 	default:
 		PCLS_PRNT("Node type unknown for entry [%d], "
 			"configure it first \n", node_index);
-	} 
+	}
 
 _ret_ptree_node_branch:
 	return rc;
@@ -881,7 +881,7 @@ int apm_clear_ptree_node_type(u8 port, u8 node_index)
 int apm_get_preclass_state(u8 port, struct apm_preclass_state *preclass_state)
 {
 	int rc = APM_RC_OK;
-	
+
 #ifdef CLE_DEBUG
 	if (preclass_state == NULL) {
 		PCLS_DBG("Null preclass_state pointer \n");
@@ -973,7 +973,7 @@ int apm_set_sys_ptree_config(u8 port,
 		rc |= apm_gbl_cle_wr32(cid, spptr_addr, data);
 
 		/* Assign Default Classification DB Ptr */
-		data = (DFCLSRESDBPRIORITY0_MASK & 
+		data = (DFCLSRESDBPRIORITY0_MASK &
 			sys_ptree_config[port].default_result) |
 			(DFCLSRESDBPTR0_MASK &
 			sys_ptree_config[port].default_result);
@@ -1015,7 +1015,7 @@ int apm_get_sys_ptree_config(u8 port,
 				struct apm_ptree_config *ptree_config)
 {
 	int rc = APM_RC_OK;
-	
+
 #ifdef CLE_DEBUG
 	if (port > MAX_CLE_PORTS) {
 		PCLS_DBG("Invalid port number \n");
@@ -1082,9 +1082,9 @@ int apm_get_preclass_trace(u8 port, struct apm_preclass_trace *preclass_trace)
 
 	switch (PORTPARSER[port][INDEX]) {
 	case CLE_PARSER0:
-		rc |= apm_gbl_cle_rd32(cid, LSTNVST0_ADDR, &data);	
+		rc |= apm_gbl_cle_rd32(cid, LSTNVST0_ADDR, &data);
 		preclass_trace->last_node_visited = LSTNVST0_RD(data);
-		
+
 		for (i = 0; i< MAX_LAST_NODES_TRACE; i++) {
 			rc |= apm_gbl_cle_rd32(cid, LSTTRCNVST0_0_ADDR + (i<<2),
 				       		&data);
@@ -1100,7 +1100,7 @@ int apm_get_preclass_trace(u8 port, struct apm_preclass_trace *preclass_trace)
 		break;
 
 	case CLE_PARSER1:
-		rc |= apm_gbl_cle_rd32(cid, LSTNVST1_ADDR, &data);	
+		rc |= apm_gbl_cle_rd32(cid, LSTNVST1_ADDR, &data);
 		preclass_trace->last_node_visited = LSTNVST1_RD(data);
 
 		for (i = 0; i< MAX_LAST_NODES_TRACE; i++) {
@@ -1118,7 +1118,7 @@ int apm_get_preclass_trace(u8 port, struct apm_preclass_trace *preclass_trace)
 		break;
 
 	case CLE_PARSER2:
-		rc |= apm_gbl_cle_rd32(cid, LSTNVST2_ADDR, &data);	
+		rc |= apm_gbl_cle_rd32(cid, LSTNVST2_ADDR, &data);
 		preclass_trace->last_node_visited = LSTNVST2_RD(data);
 
 		for (i = 0; i< MAX_LAST_NODES_TRACE; i++) {
