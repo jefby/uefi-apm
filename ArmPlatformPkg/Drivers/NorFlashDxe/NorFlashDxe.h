@@ -380,14 +380,6 @@ NorFlashUnlockAndEraseSingleBlock (
   );
 
 EFI_STATUS
-NorFlashWriteSingleBlock (
-  IN NOR_FLASH_INSTANCE     *Instance,
-  IN EFI_LBA                Lba,
-  IN UINT32                 *DataBuffer,
-  IN UINT32                 BlockSizeInWords
-  );
-
-EFI_STATUS
 NorFlashWriteBlocks (
   IN  NOR_FLASH_INSTANCE *Instance,
   IN  EFI_LBA           Lba,

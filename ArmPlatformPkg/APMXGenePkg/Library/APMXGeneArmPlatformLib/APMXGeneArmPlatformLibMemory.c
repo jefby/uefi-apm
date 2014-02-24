@@ -44,9 +44,9 @@ ArmPlatformInitializeSystemMemory (
    * FIXME: I _think_ we have to comment out the following line --
    * which essentially makes this a null function -- because the
    * PcdSystemMemorySize is no longer a Dynamic value.  But, that's
-   * just a theory right now...
+   * just a theory right now... */
+  /* tphan@apm.com: We still need this until have better solution */
   PcdSet64(PcdSystemMemorySize, *MemSizeAddr);
-   */
 }
 
 /**

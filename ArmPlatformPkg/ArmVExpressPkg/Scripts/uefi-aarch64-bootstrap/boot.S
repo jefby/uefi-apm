@@ -57,7 +57,7 @@ _start:
 	b.ne	start_ns			// skip EL3 initialisation
 
 	mov	x0, #0x30			// RES1
-	orr	x0, x0, #(1 << 0)		// Non-secure EL1
+	orr	x0, x0, #(1 << 0)		// Non-secure bit
 	orr	x0, x0, #(1 << 8)		// HVC enable
 	orr	x0, x0, #(1 << 10)		// 64-bit EL2
 	msr	scr_el3, x0

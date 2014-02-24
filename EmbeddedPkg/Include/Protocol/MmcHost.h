@@ -65,7 +65,6 @@ typedef UINT32 MMC_CMD;
 #define MMC_CMD55             (MMC_INDX(55) | MMC_CMD_WAIT_RESPONSE)
 #define MMC_ACMD41            (MMC_INDX(41) | MMC_CMD_WAIT_RESPONSE | MMC_CMD_NO_CRC_RESPONSE)
 #define MMC_ACMD6             (MMC_INDX(6) | MMC_CMD_WAIT_RESPONSE | MMC_CMD_NO_CRC_RESPONSE)
-
 // Valid responses for CMD1 in eMMC
 #define EMMC_CMD1_CAPACITY_LESS_THAN_2GB 0x00FF8080 // Capacity <= 2GB, byte addressing used
 #define EMMC_CMD1_CAPACITY_GREATER_THAN_2GB 0x40FF8080 // Capacity > 2GB, 512-byte sector addressing used

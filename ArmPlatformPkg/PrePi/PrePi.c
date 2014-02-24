@@ -108,7 +108,7 @@ PrePiMain (
 
   // If ensure the FD is either part of the System Memory or totally outside of the System Memory (XIP)
   ASSERT (IS_XIP() || 
-          ((FixedPcdGet32 (PcdFdBaseAddress) >= FixedPcdGet32 (PcdSystemMemoryBase)) &&
+          ((FixedPcdGet32 (PcdFdBaseAddress) >= FixedPcdGet64 (PcdSystemMemoryBase)) &&
            ((UINT64)(FixedPcdGet64 (PcdFdBaseAddress) + FixedPcdGet32 (PcdFdSize)) <= (UINT64)(FixedPcdGet64 (PcdSystemMemoryBase) + PcdGet64 (PcdSystemMemorySize)))));
 
 
@@ -227,7 +227,6 @@ CEntryPoint (
   ArmDisableDataCache ();
   // Invalidate Data cache
   ArmInvalidateDataCache ();
-
   // Invalidate instruction cache
   ArmInvalidateInstructionCache ();
   // Enable Instruction Caches on all cores.

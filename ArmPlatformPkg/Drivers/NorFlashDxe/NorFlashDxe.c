@@ -1069,7 +1069,7 @@ NorFlashReadBlocks (
     return EFI_INVALID_PARAMETER;
   }
 
-  // Return if we have not any byte to read
+  // Return if we have not any byte to read 
   if (BufferSizeInBytes == 0) {
     return EFI_SUCCESS;
   }

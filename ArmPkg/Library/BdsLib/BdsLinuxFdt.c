@@ -317,7 +317,7 @@ RelocateFdt (
   }
 
   DEBUG_CODE_BEGIN();
-    //DebugDumpFdt (fdt);
+//    DebugDumpFdt ((VOID *) *RelocatedFdt);
   DEBUG_CODE_END();
 
   return EFI_SUCCESS;

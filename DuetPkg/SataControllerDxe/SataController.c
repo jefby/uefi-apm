@@ -394,9 +394,9 @@ SataControllerStart (
   EFI_SATA_CONTROLLER_PRIVATE_DATA  *SataPrivateData;
   UINT32                            Data32;
   UINTN                             ChannelDeviceCount;
-  UINT64                  Supports;
-  UINT64                  OriginalPciAttributes;
-  BOOLEAN                 PciAttributesSaved;
+  UINT64                            Supports;
+  UINT64                            OriginalPciAttributes;
+  BOOLEAN                           PciAttributesSaved;
 
   DEBUG ((EFI_D_INFO, "SataControllerStart START\n"));
 
@@ -501,7 +501,6 @@ SataControllerStart (
     if ((Data32 & B_AHCI_CAP_SPM) == B_AHCI_CAP_SPM) {
       SataPrivateData->DeviceCount = AHCI_MULTI_MAX_DEVICES;
     }
-    DEBUG ((EFI_D_VERBOSE, "SataControllerStart: ChannelCount:%d DeviceCount:%d\n", SataPrivateData->IdeInit.ChannelCount, SataPrivateData->DeviceCount));
   }
 
   ChannelDeviceCount = (UINTN) (SataPrivateData->IdeInit.ChannelCount) * (UINTN) (SataPrivateData->DeviceCount);
@@ -569,7 +568,6 @@ Done:
   DEBUG ((EFI_D_INFO, "SataControllerStart END status = %r\n", Status));
 
   return Status;
-
 }
 
 /**

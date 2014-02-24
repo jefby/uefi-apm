@@ -47,7 +47,7 @@
   SerialPortLib|ArmPlatformPkg/APMXGenePkg/Library/DWSerialPortLib/DWSerialPortLib.inf
   RegDumpLib|ArmPlatformPkg/APMXGenePkg/Library/APMXGeneRegDumpLib/APMXGeneRegDump.inf
 
-  # ARM PL390 General Interrupt Driver in Secure and Non-secure
+  # ARM General Interrupt Driver in Secure and Non-secure
   ArmGicLib|ArmPkg/Drivers/ArmGic/ArmGicLib.inf
 
   TimerLib|ArmPkg/Library/ArmArchTimerLib/ArmArchTimerLib.inf
@@ -169,7 +169,7 @@
    gArmPlatformTokenSpaceGuid.PcdSysClkInHz|100000000
 
    #
-   # ARM PL390 General Interrupt Controller
+   # ARM General Interrupt Controller
    gArmTokenSpaceGuid.PcdGicDistributorBase|0x78010000
    gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase|0x78020000
 
@@ -210,8 +210,8 @@
    gArmTokenSpaceGuid.PcdArmLinuxInitrdMaxOffset|0x04000000
 
    # Use the serial console (ConIn & ConOut) and the Graphic driver (ConOut)
-   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,N,1)/VenPcAnsi()"
-   gArmPlatformTokenSpaceGuid.PcdDefaultConInPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,N,1)/VenPcAnsi()"
+   gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8,N,1)/VenPcAnsi()"
+   gArmPlatformTokenSpaceGuid.PcdDefaultConInPaths|L"VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8,N,1)/VenPcAnsi()"
    gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|5
 
    #
@@ -354,7 +354,6 @@
    #
    MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
    MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
-   FatPkg/EnhancedFatDxe/Fat.inf
    MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
    #
@@ -399,8 +398,8 @@
    # ACPI Support
    #
    MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
-   MdeModulePkg/Universal/Acpi/AcpiPlatformDxe/AcpiPlatformDxe.inf
-   ArmPlatformPkg/APMXGenePkg/AcpiTables/AcpiTables.inf
+   ArmPlatformPkg/APMXGenePkg/AcpiPlatformDxe/AcpiPlatformDxe.inf
+   ArmPkg/Drivers/AcpiTables/APMXGene/AcpiTables.inf
 
    #
    # Bds

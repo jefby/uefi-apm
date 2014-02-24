@@ -22,9 +22,9 @@
 //#define MCI_TRACE
 
 #ifdef MCI_TRACE
-#define MCI_TRACE(arg...) DEBUG((EFI_D_BLKIO,## arg))
+#define TRACE(arg...) DEBUG((EFI_D_BLKIO,## arg))
 #else
-#define MCI_TRACE(arg...)
+#define TRACE(arg...)
 #endif
 
 #define MCI_ERROR(arg...) DEBUG((EFI_D_ERROR,## arg))
@@ -168,11 +168,6 @@ EFI_STATUS APMSDHCIResetPort(IN struct APM_SDHCI_HOST_T *Host, IN UINT32 Mask)
   UINT8 Reg;
   DBG(" APMSDHCIResetPort called\n");
 
-  /*
-   * RSTALL[0] : Software reset for all
-   * 1 = reset
-   * 0 = work
-   */
   Reg = SDHCIReadReg8(&Host->Reg->Swrst);
   Reg |= Mask;
   SDHCIWriteReg8(&Host->Reg->Swrst, Reg);
@@ -226,7 +221,10 @@ EFI_STATUS APMSDHCIEnableClk(IN struct APM_SDHCI_HOST_T *Host)
   DBG(" APMSDHCIEnableClk called\n");
   UINT16 Reg;
   
-  SDHCIWriteReg16(&Host->Reg->Clkcon, 0);
+  Reg = SDHCIReadReg16(&Host->Reg->Clkcon);
+  DBG(" APMSDHCIEnableClk: Clkcon value:0x%x\n", Reg);
+  Reg &= ~0x0004;
+  SDHCIWriteReg16(&Host->Reg->Clkcon, Reg);
   MicroSecondDelay(200);
 
   /* Enable internal clock */
@@ -261,6 +259,7 @@ APMSDHCIChangeBusWidth(IN struct APM_SDHCI_HOST_T *Host, IN UINTN BusWidth)
   UINT32 Cap;
   /* Enable internal clock */
   Reg  = SDHCIReadReg8(&Host->Reg->Hostctl);
+  DBG(" APMSDHCIChangeBusWidth Hostctl: 0x%x\n", Reg);
   if (BusWidth == 8) {
     Reg |= (1 << 5);
   } else if (BusWidth == 4) {
@@ -274,6 +273,7 @@ APMSDHCIChangeBusWidth(IN struct APM_SDHCI_HOST_T *Host, IN UINTN BusWidth)
   }
   Host->Bus_Width = BusWidth;
   SDHCIWriteReg8(&Host->Reg->Hostctl, Reg);
+  MicroSecondDelay(100);
   DBG("Change bus width :%d\n", BusWidth);  
   return EFI_SUCCESS;
 }
@@ -663,14 +663,30 @@ APMSDHCIInit(VOID)
   }
 
   Val = AHBCReadReg(AHBCCLKRSTOFFSET + AHBC_CLKEN_ADDR);
+  Val &= ~CFG_CLKEN_SDIO_MASK;
+  AHBCWriteReg(AHBCCLKRSTOFFSET + AHBC_CLKEN_ADDR, Val);
+  Val = AHBCReadReg(AHBCCLKRSTOFFSET + AHBC_CLKEN_ADDR);
+
+  MicroSecondDelay(1000);
+
+  Val = AHBCReadReg(AHBCCLKRSTOFFSET + AHBC_CLKEN_ADDR);
   Val |= CFG_CLKEN_SDIO_MASK;
   AHBCWriteReg(AHBCCLKRSTOFFSET + AHBC_CLKEN_ADDR, Val);
+  Val = AHBCReadReg(AHBCCLKRSTOFFSET + AHBC_CLKEN_ADDR);
+
+  MicroSecondDelay(1000);
+
+  Val  = AHBCReadReg(AHBCCLKRSTOFFSET + AHBC_SRST_ADDR);
+  Val |= CFG_SDIO_RST_MASK;
+  AHBCWriteReg(AHBCCLKRSTOFFSET + AHBC_SRST_ADDR,Val);
+  Val  = AHBCReadReg(AHBCCLKRSTOFFSET + AHBC_SRST_ADDR);
 
   MicroSecondDelay(1000);
 
   Val  = AHBCReadReg(AHBCCLKRSTOFFSET + AHBC_SRST_ADDR);
   Val &= ~CFG_SDIO_RST_MASK;
   AHBCWriteReg(AHBCCLKRSTOFFSET + AHBC_SRST_ADDR,Val);
+  Val  = AHBCReadReg(AHBCCLKRSTOFFSET + AHBC_SRST_ADDR);
 
   MicroSecondDelay(1000);
 
@@ -1079,26 +1095,26 @@ MciNotifyState (
     break;
   case MmcHwInitializationState:
     // If device already turn on then restart it
-    MCI_TRACE("MciNotifyState(MmcHwInitializationState): Reset MCI\n");
+    TRACE("MciNotifyState(MmcHwInitializationState): Reset MCI\n");
     APMSDHCIPortInit(Host);
     APMSDHCIChangeBusWidth(Host, 1);
     APMSDHCIChangeClk(Host, 200000);
     break;
   case MmcIdleState:
-    MCI_TRACE("MciNotifyState(MmcIdleState)\n");
+    TRACE("MciNotifyState(MmcIdleState)\n");
     break;
   case MmcReadyState:
-    MCI_TRACE("MciNotifyState(MmcReadyState)\n");
+    TRACE("MciNotifyState(MmcReadyState)\n");
     break;
   case MmcIdentificationState:
-    MCI_TRACE("MciNotifyState(MmcIdentificationState)\n");
+    TRACE("MciNotifyState(MmcIdentificationState)\n");
     break;
   case MmcStandByState:{
-    MCI_TRACE("MciNotifyState(MmcStandByState)\n");
+    TRACE("MciNotifyState(MmcStandByState)\n");
     break;
   }
   case MmcTransferState:
-    MCI_TRACE("MciNotifyState(MmcTransferState)\n");
+    TRACE("MciNotifyState(MmcTransferState)\n");
     if (!gBitModeSet) {
       gBitModeSet = TRUE;
       Status = MciSendCommand (This, MMC_CMD55, gRca << 16, NULL);
@@ -1117,16 +1133,16 @@ MciNotifyState (
     }
     break;
   case MmcSendingDataState:
-    MCI_TRACE("MciNotifyState(MmcSendingDataState)\n");
+    TRACE("MciNotifyState(MmcSendingDataState)\n");
     break;
   case MmcReceiveDataState:
-    MCI_TRACE("MciNotifyState(MmcReceiveDataState)\n");
+    TRACE("MciNotifyState(MmcReceiveDataState)\n");
     break;
   case MmcProgrammingState:
-    MCI_TRACE("MciNotifyState(MmcProgrammingState)\n");
+    TRACE("MciNotifyState(MmcProgrammingState)\n");
     break;
   case MmcDisconnectState:
-    MCI_TRACE("MciNotifyState(MmcDisconnectState)\n");
+    TRACE("MciNotifyState(MmcDisconnectState)\n");
     break;
   default:
     ASSERT(0);
@@ -1157,13 +1173,13 @@ MciDxeInitialize (
   EFI_HANDLE    Handle = NULL;
   INTN i;
 
-  MCI_TRACE("MciDxeInitialize()\n");
+  TRACE("MciDxeInitialize()\n");
   gNumListMciHostActive = 0;
   APMSDHCIInit();
     
   //Publish Component Name, BlockIO protocol interfaces
   for (i = 0; i < gNumListMciHostActive; i++) {
-    MCI_TRACE("Register MMC/SDIO host controller:%d\n", i);
+    TRACE("Register MMC/SDIO host controller:%d\n", i);
     gMciHost[i].InternalData = &gListMciHost[i];
     Status = gBS->InstallMultipleProtocolInterfaces (
                     &Handle, 

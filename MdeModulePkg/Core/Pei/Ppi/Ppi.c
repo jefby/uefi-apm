@@ -1,6 +1,6 @@
 /** @file
   EFI PEI Core PPI services
-  
+
 Copyright (c) 2006 - 2013, Intel Corporation. All rights reserved.<BR>
 This program and the accompanying materials
 are licensed and made available under the terms and conditions of the BSD License
@@ -19,7 +19,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
   Initialize PPI services.
 
   @param PrivateData     Pointer to the PEI Core data.
-  @param OldCoreData     Pointer to old PEI Core data. 
+  @param OldCoreData     Pointer to old PEI Core data.
                          NULL if being run in non-permament memory mode.
 
 **/
@@ -165,7 +165,7 @@ ConvertPpiPointers (
 
 /**
 
-  This function installs an interface in the PEI PPI database by GUID. 
+  This function installs an interface in the PEI PPI database by GUID.
   The purpose of the service is to publish an interface that other parties
   can use to call additional PEIMs.
 
@@ -258,9 +258,9 @@ PeiInstallPpi (
 
 /**
 
-  This function reinstalls an interface in the PEI PPI database by GUID. 
-  The purpose of the service is to publish an interface that other parties can 
-  use to replace an interface of the same name in the protocol database with a 
+  This function reinstalls an interface in the PEI PPI database by GUID.
+  The purpose of the service is to publish an interface that other parties can
+  use to replace an interface of the same name in the protocol database with a
   different interface.
 
   @param PeiServices            An indirect pointer to the EFI_PEI_SERVICES table published by the PEI Foundation.
@@ -403,8 +403,8 @@ PeiLocatePpi (
 
 /**
 
-  This function installs a notification service to be called back when a given 
-  interface is installed or reinstalled. The purpose of the service is to publish 
+  This function installs a notification service to be called back when a given
+  interface is installed or reinstalled. The purpose of the service is to publish
   an interface that other parties can use to call additional PPIs that may materialize later.
 
   @param PeiServices        An indirect pointer to the EFI_PEI_SERVICES table published by the PEI Foundation.

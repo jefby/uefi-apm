@@ -33,6 +33,9 @@
   ArmPlatformLibNull.c
   ArmPlatformLibNullMem.c
 
+[Pcd]
+  gArmTokenSpaceGuid.PcdSystemMemorySize	
+
 [Sources.Arm]
   Arm/ArmPlatformHelper.S    | GCC
   Arm/ArmPlatformHelper.asm  | RVCT
@@ -42,7 +45,6 @@
 
 [FixedPcd]
   gArmTokenSpaceGuid.PcdSystemMemoryBase
-  gArmTokenSpaceGuid.PcdSystemMemorySize
 
   gArmTokenSpaceGuid.PcdArmPrimaryCoreMask
   gArmTokenSpaceGuid.PcdArmPrimaryCore

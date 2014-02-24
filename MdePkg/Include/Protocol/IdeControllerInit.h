@@ -474,34 +474,6 @@ EFI_STATUS
   );
 
 /**
-  For some IDE controller (AHCI) that base address is mapped. This function is used to
-  get the address.
-
-  @param[in]  This          Pointer to the EFI_IDE_CONTROLLER_INIT_PROTOCOL instance.
-  @param[OUT] BaseAddress   Pointer to mapped base address.
-
-  @retval EFI_SUCCESS             The command was accepted without any errors.
-  @retval EFI_INVALID_PARAMETER   Channel is invalid (Channel >= ChannelCount).
-  @retval EFI_INVALID_PARAMETER   Device is invalid.
-  @retval EFI_NOT_READY           Modes cannot be set at this time due to lack of data.
-  @retval EFI_DEVICE_ERROR        Modes cannot be set due to hardware failure.
-                                  The driver entity should not use this device.
-
-**/
-typedef
-EFI_STATUS
-(EFIAPI *EFI_IDE_CONTROLLER_GET_BASE_ADDRESS)(
-  IN EFI_IDE_CONTROLLER_INIT_PROTOCOL  *This,
-  OUT UINT64                           *BaseAddress);
-
-typedef
-EFI_STATUS
-(EFIAPI *EFI_IDE_CONTROLLER_BUILDDEVICEPATH) (
-  IN  EFI_IDE_CONTROLLER_INIT_PROTOCOL     *This,
-  OUT EFI_DEVICE_PATH_PROTOCOL  **DevicePath
-  );
-
-/**
   Commands the IDE controller driver to program the IDE controller hardware
   so that the specified device can operate at the specified mode.
 
@@ -564,11 +536,6 @@ struct _EFI_IDE_CONTROLLER_INIT_PROTOCOL {
   /// Calculates and returns the optimum mode for a particular IDE device.
   ///
   EFI_IDE_CONTROLLER_CALCULATE_MODE      CalculateMode;
-
-  /// For some IDE controller that base address is mapped. This function is used to
-  /// get the address.
-  EFI_IDE_CONTROLLER_GET_BASE_ADDRESS    GetMappedBaseAddress;
-  EFI_IDE_CONTROLLER_BUILDDEVICEPATH     BuildDevicePath;
 
   ///
   /// Programs the IDE controller hardware to the default timing or per the modes

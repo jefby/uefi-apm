@@ -29,6 +29,25 @@
 #include "apm_preclass_base.h"
 #endif
 
+#ifndef bswap16
+UINT16
+bswap16(UINT16 x)
+{
+  return ((x << 8) & 0xff00) | ((x >> 8) & 0x00ff);
+}
+#endif
+
+#ifndef bswap32
+UINT32
+bswap32(UINT32 x)
+{
+  return  ((x << 24) & 0xff000000 ) |
+    ((x <<  8) & 0x00ff0000 ) |
+    ((x >>  8) & 0x0000ff00 ) |
+    ((x >> 24) & 0x000000ff );
+}
+#endif
+
 #define APM_RET_IVP APM_RC_INVALID_PARM
 
 /* global data */

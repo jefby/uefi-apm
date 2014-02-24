@@ -162,7 +162,8 @@ DEFINE GCC47_X64_PREFIX        = /usr/bin/
 DEFINE GCC48_IA32_PREFIX       = /usr/bin/
 DEFINE GCC48_X64_PREFIX        = /usr/bin/
 
-DEFINE UNIX_IASL_BIN           = /usr/bin/iasl
+DEFINE UNIX_IASL_BIN           = $(ASL_BIN_DIR)/usr/bin/iasl
+
 #DEFINE UNIX_IASL_BIN           = $(HOME)/programs/iasl
 DEFINE WIN_ASL_BIN_DIR         = C:\ASL
 DEFINE WIN_IASL_BIN            = DEF(WIN_ASL_BIN_DIR)\iasl.exe
@@ -332,7 +333,7 @@ DEFINE CLANG_BIN = /usr/bin/
 #                             Intel C Compiler V9.1
 #                        Dependencies:
 #                             Microsoft Visual Studio 2003 or 2005
-#                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK)
+#                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK) 
 #                             version 3790.1830 for X64 target architectures
 #                        Optional:
 #                             Required to build EBC drivers:
@@ -344,7 +345,7 @@ DEFINE CLANG_BIN = /usr/bin/
 #                             Intel C Compiler V11.1
 #                        Dependencies:
 #                             Microsoft Visual Studio 2005 or 2008
-#                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK)
+#                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK) 
 #                             version 3790.1830 for X64 target architectures
 #                        Optional:
 #                             Required to build EBC drivers:
@@ -427,7 +428,7 @@ DEFINE CLANG_BIN = /usr/bin/
 #                             Intel C Compiler V9.1
 #                        Dependencies:
 #                             Microsoft Visual Studio 2003 or 2005
-#                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK)
+#                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK) 
 #                             version 3790.1830 for X64 target architectures
 #                        Optional:
 #                             Required to build EBC drivers:
@@ -439,7 +440,7 @@ DEFINE CLANG_BIN = /usr/bin/
 #                             Intel C Compiler V11.1
 #                        Dependencies:
 #                             Microsoft Visual Studio 2005 or 2008
-#                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK)
+#                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK) 
 #                             version 3790.1830 for X64 target architectures
 #                        Optional:
 #                             Required to build EBC drivers:
@@ -455,14 +456,14 @@ DEFINE CLANG_BIN = /usr/bin/
 #                               Intel(r) Compiler for Efi Byte Code (Intel(r) EBC Compiler)
 #                             Required to build platforms or ACPI tables:
 #                               Intel(r) ACPI Compiler (iasl.exe) v20101013 from
-#                               http://www.acpica.org/downloads/previous_releases.php
+#                               http://www.acpica.org/downloads/previous_releases.php 
 #   VS2008x86   -win64-  Requires:
 #                             Microsoft Visual Studio 2008 (x86)
 #                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK) version 3790.1830
 #                        Optional:
 #                             Required to build platforms or ACPI tables:
 #                               Intel(r) ACPI Compiler (iasl.exe) v20101013 from
-#                               http://www.acpica.org/downloads/previous_releases.php
+#                               http://www.acpica.org/downloads/previous_releases.php 
 #   VS2010x86   -win64-  Requires:
 #                             Microsoft Visual Studio 2010 (x86) Premium Edition
 #                             Microsoft Windows Server 2003 Driver Development Kit (Microsoft WINDDK) version 3790.1830
@@ -481,29 +482,29 @@ DEFINE CLANG_BIN = /usr/bin/
 #                             Intel C Compiler V9.1(x86)
 #                        Dependencies:
 #                             Microsoft Visual Studio 2003 or 2005
-#                             Microsoft Windows Server 2003 Driver Development Kit
+#                             Microsoft Windows Server 2003 Driver Development Kit 
 #                             (Microsoft WINDDK) version 3790.1830 for X64 target architectures
 #                        Optional:
 #                             Required to build EBC drivers:
 #                               Intel(r) Compiler for Efi Byte Code (Intel(r) EBC Compiler)
 #                             Required to build platforms or ACPI tables:
 #                               Intel(r) ACPI Compiler (iasl.exe) v20101013 from
-#                               http://www.acpica.org/downloads/previous_releases.php
+#                               http://www.acpica.org/downloads/previous_releases.php 
 #   ICC11x86    -win64-  Requires:
 #                             Intel C Compiler V11.1(x86)
 #                        Dependencies:
 #                             Microsoft Visual Studio 2005 or 2008
-#                             Microsoft Windows Server 2003 Driver Development Kit
+#                             Microsoft Windows Server 2003 Driver Development Kit 
 #                             (Microsoft WINDDK) version 3790.1830 for X64 target architectures
 #                        Optional:
 #                             Required to build EBC drivers:
 #                               Intel(r) Compiler for Efi Byte Code (Intel(r) EBC Compiler)
 #                             Required to build platforms or ACPI tables:
 #                               Intel(r) ACPI Compiler (iasl.exe) v20101013 from
-#                               http://www.acpica.org/downloads/previous_releases.php
+#                               http://www.acpica.org/downloads/previous_releases.php 
 #  VS2005x86xASL -win64- Requires:
 #                             Microsoft Visual Studio 2005 Team Suite Edition (x86)
-#                             Microsoft Windows Server 2003 Driver Development Kit(Microsoft WINDDK) version 3790.1830
+#                             Microsoft Windows Server 2003 Driver Development Kit(Microsoft WINDDK) version 3790.1830 
 #                        Optional:
 #                             Required to build EBC drivers:
 #                               Intel(r) Compiler for Efi Byte Code (Intel(r) EBC Compiler)
@@ -512,7 +513,7 @@ DEFINE CLANG_BIN = /usr/bin/
 #                               http://download.microsoft.com/download/2/c/1/2c16c7e0-96c1-40f5-81fc-3e4bf7b65496/microsoft_asl_compiler-v4-0-0.msi
 #  VS2008x86xASL -win64- Requires:
 #                             Microsoft Visual Studio 2008 (x86)
-#                             Microsoft Windows Server 2003 Driver Development Kit(Microsoft WINDDK) version 3790.1830
+#                             Microsoft Windows Server 2003 Driver Development Kit(Microsoft WINDDK) version 3790.1830 
 #                        Optional:
 #                             Required to build platforms or ACPI tables:
 #                               Microsoft ASL ACPI Compiler (asl.exe) v4.0.0 from
@@ -1184,7 +1185,7 @@ NOOPT_VS2005x86_IPF_ASM_FLAGS      = -N us -X explicit -M ilp64 -N so -W4 -d deb
   DEBUG_VS2005x86_IPF_DLINK_FLAGS  = /NOLOGO /NODEFAULTLIB /LTCG /DLL /OPT:REF,ICF /IGNORE:4001 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:IA64 /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MAP:$(DEBUG_DIR)/$(BASE_NAME).map /PDB:$(DEBUG_DIR)/$(BASE_NAME).pdb /DEBUG
 RELEASE_VS2005x86_IPF_DLINK_FLAGS  = /NOLOGO /NODEFAULTLIB /LTCG /DLL /OPT:REF,ICF /IGNORE:4001 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:IA64 /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MAP:$(DEBUG_DIR)/$(BASE_NAME).map /PDB:$(DEBUG_DIR)/$(BASE_NAME).pdb
 NOOPT_VS2005x86_IPF_DLINK_FLAGS    = /NOLOGO /NODEFAULTLIB /LTCG /DLL /OPT:REF,ICF /IGNORE:4001 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:IA64 /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MAP:$(DEBUG_DIR)/$(BASE_NAME).map /PDB:$(DEBUG_DIR)/$(BASE_NAME).pdb /DEBUG
-
+ 
 ##################
 # EBC definitions
 ##################
@@ -1699,7 +1700,7 @@ NOOPT_VS2008x86_X64_CC_FLAGS       = /nologo /c /WX /GS- /X /W4 /Gs32768 /D UNIC
   DEBUG_VS2008x86_X64_ASM_FLAGS    = /nologo /c /WX /W3 /Cx /Zd /Zi
 RELEASE_VS2008x86_X64_ASM_FLAGS    = /nologo /c /WX /W3 /Cx /Zd
 NOOPT_VS2008x86_X64_ASM_FLAGS      = /nologo /c /WX /W3 /Cx /Zd /Zi
-
+ 
   DEBUG_VS2008x86_X64_DLINK_FLAGS  = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
 RELEASE_VS2008x86_X64_DLINK_FLAGS  = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /IGNORE:4254 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MERGE:.data=.text /MERGE:.rdata=.text
 NOOPT_VS2008x86_X64_DLINK_FLAGS    = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
@@ -2246,7 +2247,7 @@ NOOPT_VS2010x86_X64_CC_FLAGS       = /nologo /c /WX /GS- /X /W4 /Gs32768 /D UNIC
   DEBUG_VS2010x86_X64_ASM_FLAGS    = /nologo /c /WX /W3 /Cx /Zd /Zi
 RELEASE_VS2010x86_X64_ASM_FLAGS    = /nologo /c /WX /W3 /Cx /Zd
 NOOPT_VS2010x86_X64_ASM_FLAGS      = /nologo /c /WX /W3 /Cx /Zd /Zi
-
+ 
   DEBUG_VS2010x86_X64_DLINK_FLAGS  = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
 RELEASE_VS2010x86_X64_DLINK_FLAGS  = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /IGNORE:4254 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MERGE:.data=.text /MERGE:.rdata=.text
 NOOPT_VS2010x86_X64_DLINK_FLAGS    = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
@@ -3346,7 +3347,7 @@ DEFINE GCC48_AARCH64_ASLDLINK_FLAGS  = DEF(GCC_ARM_AARCH64_ASLDLINK_FLAGS)
 *_GCC44_IA32_CC_FLAGS             = DEF(GCC44_IA32_CC_FLAGS) -Os
 *_GCC44_IA32_DLINK_FLAGS          = DEF(GCC44_IA32_X64_DLINK_FLAGS) -m elf_i386 --oformat=elf32-i386
 *_GCC44_IA32_RC_FLAGS             = DEF(GCC_IA32_RC_FLAGS)
-*_GCC44_IA32_OBJCOPY_FLAGS        =
+*_GCC44_IA32_OBJCOPY_FLAGS        = 
 
 ##################
 # GCC44 X64 definitions
@@ -3369,7 +3370,7 @@ DEFINE GCC48_AARCH64_ASLDLINK_FLAGS  = DEF(GCC_ARM_AARCH64_ASLDLINK_FLAGS)
 *_GCC44_X64_CC_FLAGS             = DEF(GCC44_X64_CC_FLAGS)
 *_GCC44_X64_DLINK_FLAGS          = DEF(GCC44_X64_DLINK_FLAGS)
 *_GCC44_X64_RC_FLAGS             = DEF(GCC_X64_RC_FLAGS)
-*_GCC44_X64_OBJCOPY_FLAGS        =
+*_GCC44_X64_OBJCOPY_FLAGS        = 
 
 ####################################################################################
 #
@@ -3411,7 +3412,7 @@ DEFINE GCC48_AARCH64_ASLDLINK_FLAGS  = DEF(GCC_ARM_AARCH64_ASLDLINK_FLAGS)
 *_GCC45_IA32_CC_FLAGS             = DEF(GCC45_IA32_CC_FLAGS) -Os
 *_GCC45_IA32_DLINK_FLAGS          = DEF(GCC45_IA32_X64_DLINK_FLAGS) -m elf_i386 --oformat=elf32-i386
 *_GCC45_IA32_RC_FLAGS             = DEF(GCC_IA32_RC_FLAGS)
-*_GCC45_IA32_OBJCOPY_FLAGS        =
+*_GCC45_IA32_OBJCOPY_FLAGS        = 
 
 ##################
 # GCC45 X64 definitions
@@ -3434,7 +3435,7 @@ DEFINE GCC48_AARCH64_ASLDLINK_FLAGS  = DEF(GCC_ARM_AARCH64_ASLDLINK_FLAGS)
 *_GCC45_X64_CC_FLAGS             = DEF(GCC45_X64_CC_FLAGS)
 *_GCC45_X64_DLINK_FLAGS          = DEF(GCC45_X64_DLINK_FLAGS)
 *_GCC45_X64_RC_FLAGS             = DEF(GCC_X64_RC_FLAGS)
-*_GCC45_X64_OBJCOPY_FLAGS        =
+*_GCC45_X64_OBJCOPY_FLAGS        = 
 
 ####################################################################################
 #
@@ -3476,7 +3477,7 @@ DEFINE GCC48_AARCH64_ASLDLINK_FLAGS  = DEF(GCC_ARM_AARCH64_ASLDLINK_FLAGS)
 *_GCC46_IA32_CC_FLAGS             = DEF(GCC46_IA32_CC_FLAGS) -Os
 *_GCC46_IA32_DLINK_FLAGS          = DEF(GCC46_IA32_X64_DLINK_FLAGS) -m elf_i386 --oformat=elf32-i386
 *_GCC46_IA32_RC_FLAGS             = DEF(GCC_IA32_RC_FLAGS)
-*_GCC46_IA32_OBJCOPY_FLAGS        =
+*_GCC46_IA32_OBJCOPY_FLAGS        = 
 
 ##################
 # GCC46 X64 definitions
@@ -4192,7 +4193,7 @@ NOOPT_ICC_IPF_ASM_FLAGS                  = -N us -X explicit -M ilp64 -N so -W3 
 
   DEBUG_ICC_IPF_DLINK_FLAGS              = /NOLOGO /NODEFAULTLIB /LTCG /DLL /OPT:REF,ICF /IGNORE:4001 /MAP /ALIGN:64 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:IA64 /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MAP:$(DEST_DIR_DEBUG)/$(BASE_NAME).map /PDB:$(DEST_DIR_DEBUG)/$(BASE_NAME).pdb /DEBUG
 RELEASE_ICC_IPF_DLINK_FLAGS              = /NOLOGO /NODEFAULTLIB /LTCG /DLL /OPT:REF,ICF /IGNORE:4001 /MAP /ALIGN:64 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:IA64 /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MAP:$(DEST_DIR_DEBUG)/$(BASE_NAME).map /PDB:$(DEST_DIR_DEBUG)/$(BASE_NAME).pdb
-NOOPT_ICC_IPF_DLINK_FLAGS                = /NOLOGO /NODEFAULTLIB /LTCG /DLL /OPT:REF,ICF /IGNORE:4001 /MAP /ALIGN:64 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:IA64 /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MAP:$(DEST_DIR_DEBUG)/$(BASE_NAME).map /PDB:$(DEST_DIR_DEBUG)/$(BASE_NAME).pdb /DEBUG
+NOOPT_ICC_IPF_DLINK_FLAGS                = /NOLOGO /NODEFAULTLIB /LTCG /DLL /OPT:REF,ICF /IGNORE:4001 /MAP /ALIGN:64 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:IA64 /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MAP:$(DEST_DIR_DEBUG)/$(BASE_NAME).map /PDB:$(DEST_DIR_DEBUG)/$(BASE_NAME).pdb /DEBUG   
 
       *_ICC_IPF_SLINK_FLAGS              = /nologo
 
@@ -4303,7 +4304,7 @@ NOOPT_ICCxASL_X64_ASM_FLAGS                  = /nologo /c /WX /W3 /Cx /Zd /Zi
 
   DEBUG_ICCxASL_X64_DLINK_FLAGS              = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:CONSOLE /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
 RELEASE_ICCxASL_X64_DLINK_FLAGS              = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /IGNORE:4254 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:CONSOLE /SAFESEH:NO /BASE:0 /DRIVER /MERGE:.data=.text /MERGE:.rdata=.text
-NOOPT_ICCxASL_X64_DLINK_FLAGS                = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:CONSOLE /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
+NOOPT_ICCxASL_X64_DLINK_FLAGS                = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:CONSOLE /SAFESEH:NO /BASE:0 /DRIVER /DEBUG  
 
       *_ICCxASL_X64_SLINK_FLAGS              = /nologo /LTCG
 
@@ -4594,7 +4595,7 @@ NOOPT_ICCx86xASL_X64_ASM_FLAGS                  = /nologo /c /WX /W3 /Cx /Zd /Zi
   DEBUG_ICCx86xASL_X64_DLINK_FLAGS              = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:CONSOLE /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
 RELEASE_ICCx86xASL_X64_DLINK_FLAGS              = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /IGNORE:4254 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:CONSOLE /SAFESEH:NO /BASE:0 /DRIVER /MERGE:.data=.text /MERGE:.rdata=.text
 NOOPT_ICCx86xASL_X64_DLINK_FLAGS                = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:CONSOLE /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
-
+ 
       *_ICCx86xASL_X64_SLINK_FLAGS              = /nologo /LTCG
 
 
@@ -5275,7 +5276,7 @@ RELEASE_MYTOOLS_IA32_CC_FLAGS            = /nologo /c /WX /GS- /W4 /Gs32768 /Gy 
 NOOPT_MYTOOLS_IA32_CC_FLAGS              = /nologo /c /WX /GS- /W4 /Gs32768 /Gy /D UNICODE /FIAutoGen.h /EHs-c- /GR- /GF /Zi /Gm /Od
   DEBUG_MYTOOLS_IA32_ASM_FLAGS           = /nologo /c /WX /W3 /coff /Cx /Zd /Zi
 RELEASE_MYTOOLS_IA32_ASM_FLAGS           = /nologo /c /WX /W3 /coff /Cx /Zd
-NOOPT_MYTOOLS_IA32_ASM_FLAGS             = /nologo /c /WX /W3 /coff /Cx /Zd /Zi
+NOOPT_MYTOOLS_IA32_ASM_FLAGS             = /nologo /c /WX /W3 /coff /Cx /Zd /Zi  
   DEBUG_MYTOOLS_IA32_DLINK_FLAGS         = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:X86 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /DEBUG /PDB:$(DEBUG_DIR)/$(BASE_NAME).pdb
 RELEASE_MYTOOLS_IA32_DLINK_FLAGS         = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /IGNORE:4254 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:X86 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MERGE:.data=.text /MERGE:.rdata=.text /PDB:$(DEBUG_DIR)/$(BASE_NAME).pdb
 NOOPT_MYTOOLS_IA32_DLINK_FLAGS           = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /MACHINE:X86 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /DEBUG /PDB:$(DEBUG_DIR)/$(BASE_NAME).pdb
@@ -5300,10 +5301,10 @@ NOOPT_MYTOOLS_IA32_DLINK_FLAGS           = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /O
 
   DEBUG_MYTOOLS_X64_CC_FLAGS             = /nologo /c /WX /GS- /W4 /Gs32768 /Gy /D UNICODE /O1ib2 /GL /FIAutoGen.h /EHs-c- /GR- /GF /Zi /Gm
 RELEASE_MYTOOLS_X64_CC_FLAGS             = /nologo /c /WX /GS- /W4 /Gs32768 /Gy /D UNICODE /O1ib2 /GL /FIAutoGen.h /EHs-c- /GR- /GF
-NOOPT_MYTOOLS_X64_CC_FLAGS               = /nologo /c /WX /GS- /W4 /Gs32768 /Gy /D UNICODE /FIAutoGen.h /EHs-c- /GR- /GF /Zi /Gm /Od
+NOOPT_MYTOOLS_X64_CC_FLAGS               = /nologo /c /WX /GS- /W4 /Gs32768 /Gy /D UNICODE /FIAutoGen.h /EHs-c- /GR- /GF /Zi /Gm /Od  
   DEBUG_MYTOOLS_X64_ASM_FLAGS            = /nologo /c /WX /W3 /Cx /Zd /Zi
 RELEASE_MYTOOLS_X64_ASM_FLAGS            = /nologo /c /WX /W3 /Cx /Zd
-NOOPT_MYTOOLS_X64_ASM_FLAGS              = /nologo /c /WX /W3 /Cx /Zd /Zi
+NOOPT_MYTOOLS_X64_ASM_FLAGS              = /nologo /c /WX /W3 /Cx /Zd /Zi  
   DEBUG_MYTOOLS_X64_DLINK_FLAGS          = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
 RELEASE_MYTOOLS_X64_DLINK_FLAGS          = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /IGNORE:4254 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /MERGE:.data=.text /MERGE:.rdata=.text
 NOOPT_MYTOOLS_X64_DLINK_FLAGS            = /NOLOGO /NODEFAULTLIB /IGNORE:4001 /OPT:REF /OPT:ICF=10 /MAP /ALIGN:32 /SECTION:.xdata,D /SECTION:.pdata,D /Machine:X64 /LTCG /DLL /ENTRY:$(IMAGE_ENTRY_POINT) /SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER /SAFESEH:NO /BASE:0 /DRIVER /DEBUG
@@ -5502,7 +5503,7 @@ RELEASE_XCLANG_*_MTOC_FLAGS = -align 0x20
 RELEASE_XCLANG_IA32_DLINK_FLAGS      = -arch i386 -u _$(IMAGE_ENTRY_POINT) -e _$(IMAGE_ENTRY_POINT) -preload -segalign 0x20  -pie -all_load -dead_strip -seg1addr 0x220 -read_only_relocs suppress -map $(DEST_DIR_DEBUG)/$(BASE_NAME).map
 *_XCLANG_IA32_SLINK_FLAGS      = -static -o
   DEBUG_XCLANG_IA32_ASM_FLAGS  = -arch i386 -g
-RELEASE_XCLANG_IA32_ASM_FLAGS  = -arch i386
+RELEASE_XCLANG_IA32_ASM_FLAGS  = -arch i386 
 
 
   DEBUG_XCLANG_IA32_CC_FLAGS   = -arch i386 -c -g -O0  -Wall -Werror -include AutoGen.h -fno-stack-protector -fno-builtin -fshort-wchar -mdynamic-no-pic -mno-sse -mno-mmx -Wno-empty-body -Wno-pointer-sign -Wno-unused-function -Wno-unused-value -Wno-missing-braces -Wno-tautological-compare -Wreturn-type -Wno-unused-variable  -fasm-blocks  -mms-bitfields -msoft-float -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang
@@ -5516,16 +5517,16 @@ RELEASE_XCLANG_IA32_CC_FLAGS   = -arch i386 -c    -Os  -Wall -Werror -include Au
 RELEASE_XCLANG_X64_DLINK_FLAGS      = -arch x86_64 -u _$(IMAGE_ENTRY_POINT) -e _$(IMAGE_ENTRY_POINT) -preload -segalign 0x20  -pie -all_load -dead_strip -seg1addr 0x220 -map $(DEST_DIR_DEBUG)/$(BASE_NAME).map
 *_XCLANG_X64_SLINK_FLAGS      = -static -o
   DEBUG_XCLANG_X64_ASM_FLAGS  = -arch x86_64 -g
-RELEASE_XCLANG_X64_ASM_FLAGS  = -arch x86_64
-*_XCLANG_*_PP_FLAGS         = -E -x assembler-with-cpp -include $(DEST_DIR_DEBUG)/AutoGen.h
-*_XCLANG_*_VFRPP_FLAGS      = -x c -E -P -DVFRCOMPILE -include $(DEST_DIR_DEBUG)/$(MODULE_NAME)StrDefs.h
+RELEASE_XCLANG_X64_ASM_FLAGS  = -arch x86_64 
+*_XCLANG_*_PP_FLAGS         = -E -x assembler-with-cpp -include $(DEST_DIR_DEBUG)/AutoGen.h 
+*_XCLANG_*_VFRPP_FLAGS      = -x c -E -P -DVFRCOMPILE -include $(DEST_DIR_DEBUG)/$(MODULE_NAME)StrDefs.h 
 
 
   DEBUG_XCLANG_X64_CC_FLAGS   = -ccc-host-triple x86_64-pc-win32-macho -c -g -O0  -Wall -Werror -include AutoGen.h -fno-stack-protector -fno-builtin -fshort-wchar -mdynamic-no-pic -Wno-empty-body -Wno-pointer-sign -Wno-unused-function -Wno-unused-value -Wno-missing-braces -Wno-tautological-compare -Wreturn-type -Wno-unused-variable -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang
 RELEASE_XCLANG_X64_CC_FLAGS   = -ccc-host-triple x86_64-pc-win32-macho -c    -Os  -Wall -Werror -include AutoGen.h -fno-stack-protector -fno-builtin -fshort-wchar -mdynamic-no-pic -Wno-empty-body -Wno-pointer-sign -Wno-unused-function -Wno-unused-value -Wno-missing-braces -Wno-tautological-compare -Wreturn-type -Wno-unused-variable -ftrap-function=undefined_behavior_has_been_optimized_away_by_clang
 *_XCLANG_*_ASLCC_FLAGS      = -x c -save-temps -g -O0 -fshort-wchar -fno-strict-aliasing -Wall -Werror -Wno-missing-braces -c -include AutoGen.h -mdynamic-no-pic
 *_XCLANG_*_ASLDLINK_FLAGS   = -e _main -preload -segalign 0x20  -pie -seg1addr 0x240 -read_only_relocs suppress -map $(DEST_DIR_DEBUG)/$(BASE_NAME).map
-*_XCLANG_*_ASLPP_FLAGS      = -x c -E
+*_XCLANG_*_ASLPP_FLAGS      = -x c -E 
 *_XCLANG_*_ASL_FLAGS        =
 
 ####################################################################################
@@ -5555,8 +5556,8 @@ DEFINE RVCT_ALL_DLINK_FLAGS   = --ro-base 0 --no_scanlib --reloc --no_exceptions
 *_RVCT_ARM_ARCHDLINK_FLAGS = 
 *_RVCT_ARM_PLATFORM_FLAGS  = --cpu 7-A
 
-  DEBUG_RVCT_ARM_DLINK_FLAGS     = $(ARCHDLINK_FLAGS) DEF(RVCT_ALL_DLINK_FLAGS) --entry $(IMAGE_ENTRY_POINT) --map --list $(DEST_DIR_DEBUG)/$(BASE_NAME).map
-RELEASE_RVCT_ARM_DLINK_FLAGS     = $(ARCHDLINK_FLAGS) DEF(RVCT_ALL_DLINK_FLAGS) --entry $(IMAGE_ENTRY_POINT) --map --list $(DEST_DIR_DEBUG)/$(BASE_NAME).map
+  DEBUG_RVCT_ARM_DLINK_FLAGS     = $(ARCHDLINK_FLAGS) DEF(RVCT_ALL_DLINK_FLAGS) --entry $(IMAGE_ENTRY_POINT) --map --list $(DEST_DIR_DEBUG)/$(BASE_NAME).map 
+RELEASE_RVCT_ARM_DLINK_FLAGS     = $(ARCHDLINK_FLAGS) DEF(RVCT_ALL_DLINK_FLAGS) --entry $(IMAGE_ENTRY_POINT) --map --list $(DEST_DIR_DEBUG)/$(BASE_NAME).map 
 
 
 *_RVCT_ARM_ASM_FLAGS       = $(ARCHASM_FLAGS) $(PLATFORM_FLAGS) DEF(RVCT_ALL_ASM_FLAGS)
@@ -5597,7 +5598,7 @@ RELEASE_RVCT_ARM_CC_FLAGS  = $(ARCHCC_FLAGS) $(PLATFORM_FLAGS) --diag_suppress=5
 *_RVCTLINUX_ARM_ARCHDLINK_FLAGS = 
 *_RVCTLINUX_ARM_PLATFORM_FLAGS  = --cpu 7-A
 
-DEBUG_RVCTLINUX_ARM_DLINK_FLAGS     = $(ARCHDLINK_FLAGS) DEF(RVCT_ALL_DLINK_FLAGS) --entry $(IMAGE_ENTRY_POINT) --map --list $(DEST_DIR_DEBUG)/$(BASE_NAME).map
+DEBUG_RVCTLINUX_ARM_DLINK_FLAGS     = $(ARCHDLINK_FLAGS) DEF(RVCT_ALL_DLINK_FLAGS) --entry $(IMAGE_ENTRY_POINT) --map --list $(DEST_DIR_DEBUG)/$(BASE_NAME).map 
 RELEASE_RVCTLINUX_ARM_DLINK_FLAGS   = $(ARCHDLINK_FLAGS) DEF(RVCT_ALL_DLINK_FLAGS) --entry $(IMAGE_ENTRY_POINT) --map --list $(DEST_DIR_DEBUG)/$(BASE_NAME).map
 
 *_RVCTLINUX_ARM_ASM_FLAGS       = $(ARCHASM_FLAGS) $(PLATFORM_FLAGS) DEF(RVCT_ALL_ASM_FLAGS)
@@ -5641,7 +5642,7 @@ RELEASE_RVCTLINUX_ARM_CC_FLAGS  = $(ARCHCC_FLAGS) $(PLATFORM_FLAGS) --diag_suppr
 #
 *_RVCTCYGWIN_ARM_ARCHCC_FLAGS    = --thumb --fpu=softvfp
 *_RVCTCYGWIN_ARM_ARCHASM_FLAGS   =
-*_RVCTCYGWIN_ARM_ARCHDLINK_FLAGS =
+*_RVCTCYGWIN_ARM_ARCHDLINK_FLAGS = 
 *_RVCTCYGWIN_ARM_PLATFORM_FLAGS  = --cpu 7-A
 
   DEBUG_RVCTCYGWIN_ARM_DLINK_FLAGS     = "$(DLINKPATH_FLAG)" $(ARCHDLINK_FLAGS) DEF(RVCT_ALL_DLINK_FLAGS) --entry $(IMAGE_ENTRY_POINT) --map --list `cygpath -m $(DEST_DIR_DEBUG)/$(BASE_NAME).map` 
@@ -5687,7 +5688,7 @@ RELEASE_RVCTCYGWIN_ARM_CC_FLAGS  = "$(CCPATH_FLAG)" $(ARCHCC_FLAGS) $(PLATFORM_F
 *_ARMGCC_*_ASL_OUTFLAGS      = DEF(IASL_OUTFLAGS)
 *_ARMGCC_*_ASLPP_FLAGS       = -x c -E -P
 *_ARMGCC_*_ASLCC_FLAGS       = -x c
-*_ARMGCC_*_ASLDLINK_FLAGS    = DEF(GCC_DLINK_FLAGS_COMMON) --entry _ReferenceAcpiTable
+*_ARMGCC_*_ASLDLINK_FLAGS    = DEF(GCC_DLINK_FLAGS_COMMON) --entry ReferenceAcpiTable
 
 ##################
 # ARM definitions
@@ -5802,7 +5803,7 @@ RELEASE_ARMGCC_AARCH64_CC_FLAGS = $(ARCHCC_FLAGS) $(PLATFORM_FLAGS) DEF(GCC_AARC
 # Use default values, or override in DSC file
 #
 *_ARMLINUXGCC_ARM_ARCHCC_FLAGS    = -mthumb
-*_ARMLINUXGCC_ARM_ARCHASM_FLAGS   =
+*_ARMLINUXGCC_ARM_ARCHASM_FLAGS   = 
 *_ARMLINUXGCC_ARM_ARCHDLINK_FLAGS =
 *_ARMLINUXGCC_ARM_PLATFORM_FLAGS  = -march=armv7-a
 

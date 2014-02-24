@@ -69,9 +69,11 @@
   gArmMpCoreInfoGuid
 
 [FeaturePcd]  
-  gEmbeddedTokenSpaceGuid.PcdCacheEnable
   gEmbeddedTokenSpaceGuid.PcdPrePiProduceMemoryTypeInformationHob
   gArmPlatformTokenSpaceGuid.PcdSendSgiToBringUpSecondaryCores
+
+[Pcd]
+  gArmTokenSpaceGuid.PcdSystemMemorySize
 
 [FixedPcd]
   gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
@@ -90,7 +92,6 @@
   gArmPlatformTokenSpaceGuid.PcdPeiGlobalVariableSize
 
   gArmTokenSpaceGuid.PcdSystemMemoryBase
-  gArmTokenSpaceGuid.PcdSystemMemorySize
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize
   
   gArmPlatformTokenSpaceGuid.PcdCoreCount
