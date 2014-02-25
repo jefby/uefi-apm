@@ -276,92 +276,14 @@ int apm_eth_tx(struct eth_device *dev, volatile void *ptr, int len)
 	return rc;
 }
 
-/* Deliver received packets to higher layers */
-int apm_eth_rx(struct eth_device *dev, VOID *Buffer, UINTN *BufferSize)
+static int dealloc_rx_msg(struct apm_enet_dev *priv_dev, struct apm_qm_msg32 *msg)
 {
-	int rc;
-	struct apm_enet_dev *priv_dev;
-	struct apm_qm_msg_desc rx_msg_desc;
-	struct apm_qm_msg32 msg;
 	struct apm_qm_msg_desc fp_msg_desc;
 	struct apm_qm_msg16 fp_msg;
-	struct apm_qm_msg16 *msg16 = &msg.msg16;
-	u16 data_len;
-	u8 LErr;
-	u64 pkt_ptr = 0UL;
-	u32 qm_ip;
-	struct apm_data_priv *priv;
+	struct apm_qm_msg16 *msg16 = &msg->msg16;
+	u32 qm_ip = priv_dev->qm_ip;
+	int rc;
 
-	priv_dev = dev->priv;
-	qm_ip = priv_dev->qm_ip;
-	priv = &priv_dev->priv;
-
-	memset(&msg, 0, sizeof(msg));
-	rx_msg_desc.qm_ip_blk = qm_ip;
-	rx_msg_desc.msg = &msg;
-	rx_msg_desc.qid = priv_dev->queues.rx_qid;
-	rx_msg_desc.mb_id = priv_dev->queues.rx_mbid;
-	rx_msg_desc.is_msg16 = 0;
-
-	/* Get the Pkts if any */
-#ifdef CONFIG_APM_QM_ALTERNATE_DEQUEUE
-	rc = apm_qml_pull_msg(&rx_msg_desc);
-#else
-	if (qm_ip == IP_BLK_QML)
-		rc = apm_qml_pull_msg(&rx_msg_desc);
-	else
-		rc = apm_qm_pull_msg(&rx_msg_desc);
-#endif
-	if (rc != 0) {
-		ENET_DEBUG_RX("Rcvd Nothing: Err %d\n", rc);
-		return APM_RC_OK;
-		//return APM_RC_ERROR;
-	}
-	if (msg16->LErr)
-		ENET_DEBUG_RX("Rcvd LErr 0x%02x\n", msg16->LErr);
-	if (msg16->ELErr)
-		ENET_DEBUG_RX("Rcvd ELErr 0x%02x\n", msg16->ELErr);
-	LErr = msg16->LErr;
-	LErr |= (u8) msg16->ELErr << 3;
-	if (LErr) {
-#if defined(BYPASS_CLE)
-		if (LErr == 0x10 || LErr == 0x11)
-			goto process_pkt;
-#endif		
-		ENET_DEBUG_ERR("Rcvd LErr 0x%02x ELErr 0x%02x\n", msg16->LErr, msg16->ELErr);
-		apm_enet_parse_error(LErr, 1, rx_msg_desc.qid);
-		if (priv->phy_mode == PHY_MODE_SGMII) {
-			apm_enet_serdes_reset(priv);
-			apm_enet_autoneg(priv, 1);
-		}
-		if (msg16->FPQNum & 0x3ff) /* 10-bit */
-			goto dealloc;
-		return APM_RC_ERROR;
-	}
-
-#if defined(BYPASS_CLE)
-process_pkt:		
-#endif
-	/* Pass the Packet to Higher Layer for processing */
-	data_len = msg16->BufDataLen & TX_DATA_LEN_MASK;
-	pkt_ptr = (u64) (msg16->DataAddr);
-
-	ENET_DEBUG_RX("Rcvd Pkt of Len[%d] Passing it to Higher UP\n", data_len);
-#ifdef DEBUG_HEXDUMP
-	printf("Message Dump:: \n");
-	putshex((u8 *)&msg,  sizeof(struct apm_qm_msg32));
-	printf("Packet Dump:: \n");
-	putshex((u8 *)(u64)msg16->DataAddr, data_len);
-#endif
-	//NetReceive((uchar*)pkt_ptr, data_len);
-	*BufferSize = data_len;
-	memcpy(Buffer, (void*) pkt_ptr, data_len);
-	ENET_DEBUG_RX("pkt_ptr = 0x%llx, data_len = 0x%x\n", pkt_ptr, data_len);
-#ifdef DEBUG_HEXDUMP
-	putshex((u8 *)Buffer, data_len);
-#endif
-dealloc:
-	/* Dealloc the Buff to FP */
 	ENET_DEBUG_RX("Dealloc the Buff to FP \n");
 	memset(&fp_msg, 0, sizeof(fp_msg));
 
@@ -385,8 +307,117 @@ dealloc:
 #endif
 	if (rc != APM_RC_OK)
 		printf("Can not de-allocate buffer to QM\n");
-
 	return rc;
+}
+
+/*
+ * return size of buffer received, or zero for error
+ */
+static int get_rx_msg(struct eth_device *dev, struct apm_qm_msg32 *msg)
+{
+	struct apm_enet_dev *priv_dev = dev->priv;
+	struct apm_data_priv *priv = &priv_dev->priv;
+	struct apm_qm_msg_desc rx_msg_desc;
+	struct apm_qm_msg16 *msg16 = &msg->msg16;
+	u32 qm_ip = priv_dev->qm_ip;
+	int rc;
+	u8 LErr;
+
+	memset(msg, 0, sizeof(msg));
+	rx_msg_desc.qm_ip_blk = qm_ip;
+	rx_msg_desc.msg = msg;
+	rx_msg_desc.qid = priv_dev->queues.rx_qid;
+	rx_msg_desc.mb_id = priv_dev->queues.rx_mbid;
+	rx_msg_desc.is_msg16 = 0;
+
+	/* Get the Pkts if any */
+#ifdef CONFIG_APM_QM_ALTERNATE_DEQUEUE
+	rc = apm_qml_pull_msg(&rx_msg_desc);
+#else
+	if (qm_ip == IP_BLK_QML)
+		rc = apm_qml_pull_msg(&rx_msg_desc);
+	else
+		rc = apm_qm_pull_msg(&rx_msg_desc);
+#endif
+	if (rc != 0)
+		return 0;
+
+	if (msg16->LErr)
+		ENET_DEBUG_RX("Rcvd LErr 0x%02x\n", msg16->LErr);
+	if (msg16->ELErr)
+		ENET_DEBUG_RX("Rcvd ELErr 0x%02x\n", msg16->ELErr);
+	LErr = msg16->LErr;
+	LErr |= (u8) msg16->ELErr << 3;
+	if (LErr) {
+#if defined(BYPASS_CLE)
+		if (LErr == 0x10 || LErr == 0x11)
+			return 0;
+#endif		
+		ENET_DEBUG_ERR("Rcvd LErr 0x%02x ELErr 0x%02x\n", msg16->LErr, msg16->ELErr);
+		apm_enet_parse_error(LErr, 1, rx_msg_desc.qid);
+		if (priv->phy_mode == PHY_MODE_SGMII) {
+			apm_enet_serdes_reset(priv);
+			apm_enet_autoneg(priv, 1);
+		}
+		if (msg16->FPQNum & 0x3ff) /* 10-bit */
+			dealloc_rx_msg(priv_dev, msg);
+
+		return 0;
+	}
+	return msg16->BufDataLen & TX_DATA_LEN_MASK;
+}
+
+
+/* Deliver received packets to higher layers */
+int apm_eth_rx(struct eth_device *dev, VOID *Buffer, UINTN *BufferSize)
+{
+	static int msg_buf_len = 0;
+	struct apm_enet_dev *priv_dev;
+	struct apm_qm_msg32 msg;
+	struct apm_qm_msg16 *msg16 = &msg.msg16;
+	u16 data_len;
+	u64 pkt_ptr = 0UL;
+	UINTN orig_size;
+
+	priv_dev = dev->priv;
+
+	orig_size = *BufferSize;
+
+	if (!msg_buf_len) {
+		msg_buf_len = get_rx_msg(dev, &msg);
+		if (msg_buf_len == 0) {
+			*BufferSize = 0;
+			return APM_RC_OK;
+		}
+	}
+
+	/* Pass the Packet to Higher Layer for processing */
+	data_len = msg_buf_len;
+	pkt_ptr = (u64) (msg16->DataAddr);
+
+	*BufferSize = data_len;
+	if (data_len > orig_size)
+		return APM_RC_OK;
+
+	msg_buf_len = 0;
+
+	ENET_DEBUG_RX("Rcvd Pkt of Len[%d] Passing it to Higher UP\n", data_len);
+#ifdef DEBUG_HEXDUMP
+	printf("Message Dump:: \n");
+	putshex((u8 *)&msg,  sizeof(struct apm_qm_msg32));
+	printf("Packet Dump:: \n");
+	putshex((u8 *)(u64)msg16->DataAddr, data_len);
+#endif
+	//NetReceive((uchar*)pkt_ptr, data_len);
+	*BufferSize = data_len;
+	memcpy(Buffer, (void*) pkt_ptr, data_len);
+	ENET_DEBUG_RX("pkt_ptr = 0x%llx, data_len = 0x%x\n", pkt_ptr, data_len);
+#ifdef DEBUG_HEXDUMP
+	putshex((u8 *)Buffer, data_len);
+#endif
+	dealloc_rx_msg(priv_dev, &msg);
+
+	return APM_RC_OK;
 }
 
 static void apm_eth_halt(struct eth_device *dev)

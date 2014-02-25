@@ -146,6 +146,7 @@ EFI_STATUS
 //  Global data for this driver
 //
 #define SNP_DRIVER_SIGNATURE SIGNATURE_32 ('W', 'S', 'N', 'P')
+#define TX_QUEUE_DEPTH 16
 
 struct _SNP_GLOBAL_DATA {
   UINT32                            Signature;
@@ -159,6 +160,11 @@ struct _SNP_GLOBAL_DATA {
   NET_UTILITY_TABLE                 NtNetUtilityTable;
 
   EFI_LOCK                          Lock;
+
+  // Keep track of transmitted buffers for GetStatus
+  VOID              *TxQueue[TX_QUEUE_DEPTH];
+  UINTN             TxQueHead;
+  UINTN             TxQueTail;
 
   //
   //  Private functions

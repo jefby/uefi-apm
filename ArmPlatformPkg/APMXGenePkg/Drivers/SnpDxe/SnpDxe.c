@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, AppliedMicro Corp. All rights reserved.
+ * Copyright (c) 2013, 2014, AppliedMicro Corp. All rights reserved.
  *
  * This program and the accompanying materials
  * are licensed and made available under the terms and conditions of the BSD License
@@ -75,6 +75,10 @@ SNP_GLOBAL_DATA         gSnpDxeGlobalData = {
     0,
     EfiLockUninitialized
   },                          //  Lock
+  { 0 }, // TxQueue
+  0,     // TxQueHead
+  0,     // TxQueTail
+
   //
   //  Private functions
   //
@@ -105,6 +109,47 @@ int putshex(unsigned char *buf, int len)
 }
 #endif
 
+int TxQueNext (
+    IN int n
+    )
+{
+  return (((n + 1) >= TX_QUEUE_DEPTH) ? 0 : (n + 1));
+}
+
+BOOLEAN
+TxQueInsert (
+    IN    SNP_GLOBAL_DATA *GlobalData,
+    IN    VOID          *Buffer
+    )
+{
+
+  if (TxQueNext (GlobalData->TxQueTail) == GlobalData->TxQueHead)
+    return FALSE;
+
+  GlobalData->TxQueue[GlobalData->TxQueTail] = Buffer;
+  GlobalData->TxQueTail = TxQueNext (GlobalData->TxQueTail);
+
+  return TRUE;
+}
+
+VOID
+*TxQueRemove (
+    IN    SNP_GLOBAL_DATA *GlobalData
+    )
+{
+  VOID *Buffer;
+
+  if (GlobalData->TxQueTail == GlobalData->TxQueHead) {
+    return NULL;
+  }
+
+  Buffer = GlobalData->TxQueue[GlobalData->TxQueHead];
+  GlobalData->TxQueue[GlobalData->TxQueHead] = NULL;
+  GlobalData->TxQueHead = TxQueNext (GlobalData->TxQueHead);
+
+  return Buffer;
+}
+
 /**
   Changes the state of a network interface from "stopped" to "started".
 
@@ -118,7 +163,29 @@ EFIAPI
 SnpDxeStart (
     IN EFI_SIMPLE_NETWORK_PROTOCOL *This)
 {
+  EFI_SIMPLE_NETWORK_MODE *Mode;
+
   DBG("Enter SnpDxeStart\n");
+  if (This == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  // Check state of the driver
+  Mode = This->Mode;
+  switch (Mode->State) {
+  case EfiSimpleNetworkStopped:
+    break;
+  case EfiSimpleNetworkStarted:
+  case EfiSimpleNetworkInitialized:
+    DEBUG((EFI_D_WARN, "SnpDxe: Driver already started\n"));
+    return EFI_ALREADY_STARTED;
+  default:
+    DEBUG((EFI_D_ERROR, "SnpDxe: Driver in an invalid state: %u\n",
+          (UINTN)Mode->State));
+    return EFI_DEVICE_ERROR;
+  }
+  Mode->State = EfiSimpleNetworkStarted;
+
   return EFI_SUCCESS;
 }
 
@@ -135,7 +202,28 @@ EFIAPI
 SnpDxeStop (
     IN EFI_SIMPLE_NETWORK_PROTOCOL *This)
 {
+  EFI_SIMPLE_NETWORK_MODE *Mode;
+
   DBG("Enter SnpDxeStop\n");
+  if (This == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  Mode = This->Mode;
+  switch (Mode->State) {
+  case EfiSimpleNetworkStarted:
+  case EfiSimpleNetworkInitialized:
+    break;
+  case EfiSimpleNetworkStopped:
+    DEBUG((EFI_D_WARN, "SnpDxe: Driver not started\n"));
+    return EFI_NOT_STARTED;
+  default:
+    DEBUG((EFI_D_ERROR, "SnpDxe: Driver in an invalid state: %u\n",
+          (UINTN)Mode->State));
+    return EFI_DEVICE_ERROR;
+  }
+
+  Mode->State = EfiSimpleNetworkStopped;
   return EFI_SUCCESS;
 }
 
@@ -166,7 +254,32 @@ SnpDxeInitialize (
     IN UINTN                        ExtraRxBufferSize OPTIONAL,
     IN UINTN                        ExtraTxBufferSize OPTIONAL)
 {
+  EFI_SIMPLE_NETWORK_MODE *Mode;
+
   DBG("Enter SnpDxeInitialize\n");
+
+  if (This == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  // Check that driver was started but not initialised
+  Mode = This->Mode;
+  switch (Mode->State) {
+  case EfiSimpleNetworkStarted:
+    break;
+  case EfiSimpleNetworkInitialized:
+    DEBUG((EFI_D_WARN, "SnpDxe: Driver already initialized\n"));
+    return EFI_SUCCESS;
+  case EfiSimpleNetworkStopped:
+    DEBUG((EFI_D_WARN, "SnpDxe: Driver not started\n"));
+    return EFI_NOT_STARTED;
+  default:
+    DEBUG((EFI_D_ERROR, "SnpDxe: Driver in an invalid state: %u\n",
+          (UINTN)Mode->State));
+    return EFI_DEVICE_ERROR;
+  }
+
+  Mode->State = EfiSimpleNetworkInitialized;
   return EFI_SUCCESS;
 }
 
@@ -206,7 +319,33 @@ EFIAPI
 SnpDxeShutdown (
     IN EFI_SIMPLE_NETWORK_PROTOCOL *This)
 {
+  EFI_SIMPLE_NETWORK_MODE *Mode;
+
   DBG("Enter SnpDxeShutdown\n");
+
+  if (This == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  // First check that driver has already been initialized
+  Mode = This->Mode;
+  switch (Mode->State) {
+  case EfiSimpleNetworkInitialized:
+    break;
+  case EfiSimpleNetworkStarted:
+    DEBUG((EFI_D_WARN, "SnpDxe: Driver not yet initialized\n"));
+    return EFI_DEVICE_ERROR;
+  case EfiSimpleNetworkStopped:
+    DEBUG((EFI_D_WARN, "SnpDxe: Driver in stopped state\n"));
+    return EFI_NOT_STARTED;
+  default:
+    DEBUG((EFI_D_ERROR, "SnpDxe: Driver in an invalid state: %u\n",
+          (UINTN)Mode->State));
+    return EFI_DEVICE_ERROR;
+  }
+
+  Mode->State = EfiSimpleNetworkStarted;
+
   return EFI_SUCCESS;
 }
 
@@ -408,9 +547,12 @@ SnpDxeGetStatus (
     OUT UINT32                      *InterruptStatus OPTIONAL,
     OUT VOID                        **TxBuf OPTIONAL)
 {
-  //TODO DBG("Enter SnpDxeGetStatus\n");
+  SNP_INSTANCE_DATA     *Instance;
+
+  Instance    = SNP_INSTANCE_DATA_FROM_SNP_THIS (This);
+
   if (TxBuf != NULL) {
-    *((UINT8 **) TxBuf) = (UINT8 *) 1;
+    *TxBuf = TxQueRemove (Instance->GlobalData);
   }
 
   if (InterruptStatus != NULL) {
@@ -478,6 +620,11 @@ SnpDxeTransmit (
     return EFI_ACCESS_DENIED;
   }
 
+  if (TxQueNext (GlobalData->TxQueTail) == GlobalData->TxQueHead) {
+    EfiReleaseLock (&GlobalData->Lock);
+    return EFI_NOT_READY;
+  }
+
   ReturnValue = GlobalData->NtNetUtilityTable.Transmit (
                                                 Instance->InterfaceInfo.InterfaceIndex,
                                                 HeaderSize,
@@ -487,6 +634,10 @@ SnpDxeTransmit (
                                                 DestAddr,
                                                 Protocol
                                                 );
+
+  if (ReturnValue == EFI_SUCCESS) {
+    TxQueInsert (GlobalData, Buffer);
+  }
 
   EfiReleaseLock (&GlobalData->Lock);
 
@@ -573,6 +724,12 @@ SnpDxeReceive (
     return ReturnValue;
   }
 
+  if (*BufferSize == 0)
+    return EFI_NOT_READY;
+
+  if (*BufferSize > BufSize)
+    return EFI_BUFFER_TOO_SMALL;
+
   if (HeaderSize != NULL) {
     *HeaderSize = 14;
 #if 0
@@ -612,7 +769,7 @@ SnpDxeReceive (
   }
 #endif
 
-  return (*BufferSize <= BufSize) ? EFI_SUCCESS : EFI_BUFFER_TOO_SMALL;
+  return EFI_SUCCESS;
 }
 
 /**
@@ -750,7 +907,7 @@ SNP_INSTANCE_DATA gSnpDxeInstanceTemplate = {
     NULL                                  //  Mode
   },
   {                                       //  Mode
-    EfiSimpleNetworkInitialized,          //  State
+    EfiSimpleNetworkStopped,              //  State
     NET_ETHER_ADDR_LEN,                   //  HwAddressSize
     NET_ETHER_HEADER_SIZE,                //  MediaHeaderSize
     1500,                                 //  MaxPacketSize
@@ -889,6 +1046,8 @@ DBG(" SnpDxeInitializeGlobalData Addr[5]=0x%x\n", NetInterfaceInfoBuffer[0].MacA
     //  Copy the content from a template
     //
     CopyMem (Instance, &gSnpDxeInstanceTemplate, sizeof (SNP_INSTANCE_DATA));
+
+    Instance->Snp.Mode = &Instance->Mode;
 
     //
     //  Set the interface information.
