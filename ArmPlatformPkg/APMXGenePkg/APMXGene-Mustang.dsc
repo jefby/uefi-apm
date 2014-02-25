@@ -26,7 +26,7 @@
 [Defines]
   PLATFORM_NAME                  = APMXGene-Mustang
   PLATFORM_GUID                  = edcba8fd-a24e-489c-b4e9-93561f576500
-  PLATFORM_VERSION               = 0.1
+  PLATFORM_VERSION               = 1.1-RedHat-0.1
   DSC_SPECIFICATION              = 0x00010005
   OUTPUT_DIRECTORY               = Build/APMXGene-Mustang
   SUPPORTED_ARCHITECTURES        = AARCH64
