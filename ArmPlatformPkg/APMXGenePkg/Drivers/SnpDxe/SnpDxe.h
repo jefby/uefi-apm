@@ -22,6 +22,7 @@
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
 #include <Library/BaseMemoryLib.h>
+#include <Library/UefiRuntimeServicesTableLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiLib.h>
 #include <Library/DevicePathLib.h>
@@ -38,7 +39,7 @@
 
 #ifdef APM_XGENE /* TODO */
 #include "ethernet/apm_enet_access.h"
-extern int apm_eth_initialize(void);
+extern int apm_eth_initialize(u8 *mac_addr);
 extern struct eth_device *emac_dev;
 extern int apm_eth_tx(struct eth_device *dev, volatile void *ptr, int len);
 extern UINT32 eth_initialized;

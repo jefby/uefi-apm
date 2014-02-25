@@ -167,15 +167,6 @@ SnpDxeInitialize (
     IN UINTN                        ExtraTxBufferSize OPTIONAL)
 {
   DBG("Enter SnpDxeInitialize\n");
-#if 1	//TODO
-	//Print( L"Enter SnpDxeInitialize\n" );
-	apm_eth_initialize();
-	if (!eth_initialized) {	//TODO move here
-   		(&emac_dev[0])->init(&emac_dev[0]);
-		eth_initialized = 1;
-   	}
-
-#endif
   return EFI_SUCCESS;
 }
 
@@ -903,10 +894,10 @@ DBG(" SnpDxeInitializeGlobalData Addr[5]=0x%x\n", NetInterfaceInfoBuffer[0].MacA
     //  Set the interface information.
     //
     Instance->InterfaceInfo = NetInterfaceInfoBuffer[Index];
+    CopyMem ((void *)&(Instance->InterfaceInfo.MacAddr), NetInterfaceInfoBuffer[Index].MacAddr.Addr, 6);
     //
     //  Initialize this instance
     //
-DBG(" SnpDxeInitializeGlobalData interface=%d\n", Instance->InterfaceInfo.InterfaceIndex);
     Status = This->InitializeInstanceData (This, Instance);
     if (EFI_ERROR (Status)) {
 
@@ -917,6 +908,15 @@ DBG(" SnpDxeInitializeGlobalData interface=%d\n", Instance->InterfaceInfo.Interf
     //  Insert this instance into the instance list
     //
     InsertTailList (&This->InstanceList, &Instance->Entry);
+#if 1  //TODO
+       //Print( L"Enter SnpDxeInitialize\n" );
+	apm_eth_initialize((UINT8 *)&(Instance->InterfaceInfo.MacAddr));
+	if (!eth_initialized) { //TODO move here
+		(&emac_dev[0])->init(&emac_dev[0]);
+		eth_initialized = 1;
+	}
+
+#endif
   }
   DBG("Exit SnpDxeInitializeGlobalData Index=%d\n", Index);
   return EFI_SUCCESS;

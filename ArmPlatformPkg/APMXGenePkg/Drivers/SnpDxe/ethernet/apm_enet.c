@@ -775,14 +775,13 @@ void apm_xg_laser_on(u32 port)
 }
 
 int apm_eth_device_setup(u8 port, u32 phy_addr, u32 phy_mode,
-	      void *port_base_addr, void *gbl_base_addr, void *mii_base_addr)
+	      void *port_base_addr, void *gbl_base_addr, void *mii_base_addr,
+	      u8 *apm_mac_addr)
 {
 	struct eth_device *dev;
 	struct apm_enet_dev *priv_dev;
 	struct apm_data_priv *priv;
 	int rc = APM_RC_ERROR;
-	//TODO char mac_addr[16];
-	u8 mac_addr[6] = {0x0, 0x11, 0x22, 0x33, 0x44, 0x56}; //TODO matches APMXGeneNet_Initialize
 
 	/* Allocate device structure */
 	dev = (struct eth_device *) malloc(sizeof(struct eth_device));
@@ -809,6 +808,10 @@ int apm_eth_device_setup(u8 port, u32 phy_addr, u32 phy_mode,
 	dev->next = NULL;
 	dev->index = port;
 
+        ENET_DEBUG("apm_eth_device_setup  MAC: %2x:%2x:%2x:%2x:%2x:%x !!!",
+                   apm_mac_addr[0], apm_mac_addr[1], apm_mac_addr[2],
+                   apm_mac_addr[3], apm_mac_addr[4], apm_mac_addr[5]);
+
 #if 0	//TODO
 	/* Setup the ethernet name */
 	sprintf(dev->name, "eth%d", eth_count);
@@ -818,7 +821,7 @@ int apm_eth_device_setup(u8 port, u32 phy_addr, u32 phy_mode,
 	else
 		strcpy(mac_addr, "ethaddr");
 #else
-	memcpy(dev->enetaddr, mac_addr, sizeof(mac_addr));
+	memcpy(dev->enetaddr, apm_mac_addr, 6);
 #endif
 
 #if defined(CONFIG_SGMII_STD_ALONE) && defined(CONFIG_ORION)
@@ -842,12 +845,6 @@ int apm_eth_device_setup(u8 port, u32 phy_addr, u32 phy_mode,
 	priv->force_serdes_reset = 1;
 #else
 	priv->force_serdes_reset = 0;
-#endif
-
-#if 0	//
-	eth_getenv_enetaddr(mac_addr, dev->enetaddr);
-#else
-	memcpy(dev->enetaddr, mac_addr, sizeof(mac_addr));
 #endif
 
 	/* Initialize device function pointers */
@@ -949,7 +946,7 @@ _ret:
 
 /* Ethernet Subsystem Initialization */
 #ifdef APM_XGENE /* TODO */
-int apm_eth_initialize(void)
+int apm_eth_initialize(u8 *mac_addr)
 #else
 int apm_eth_initialize(bd_t *bis)
 #endif
@@ -999,7 +996,8 @@ int apm_eth_initialize(bd_t *bis)
 	if ((rc = apm_eth_device_setup(MENET, phy_addr[MENET], phy_mode[MENET],
 					(void *)APM_ENET4_BASE_ADDRESS,
 					(void *)APM_ENET4_GBL_BASE_ADDRESS,
-					(void *)APM_ENET4_BASE_ADDRESS))) {
+					(void *)APM_ENET4_BASE_ADDRESS,
+					mac_addr))) {
 		return rc;
 	}
 #endif

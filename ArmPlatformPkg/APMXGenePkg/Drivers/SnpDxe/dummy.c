@@ -17,6 +17,59 @@ UINT32 eth_initialized;
 //
 //  Functions in Net Library
 //
+
+UINT8 apm_mac_addr[6] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
+extern EFI_GUID gShellVariableGuid;
+
+static void AsciiStrToEthAddr(CHAR16 *MacBuf, UINT8 *MAC)
+{
+#define A_D(x) ( ((x >= L'a')&&(x <= L'f'))?(x-L'a'+0xa):(((x >= L'A')&&(x <= L'F'))?(x-L'A'+0xa):(x-L'0')) )
+
+  *MAC++ = (A_D(*MacBuf)<<4) + A_D(*(MacBuf+1));
+  *MAC++ = (A_D(*(MacBuf+3))<<4) + A_D(*(MacBuf+4));
+  *MAC++ = (A_D(*(MacBuf+6))<<4) + A_D(*(MacBuf+7));
+  *MAC++ = (A_D(*(MacBuf+9))<<4) + A_D(*(MacBuf+10));
+  *MAC++ = (A_D(*(MacBuf+12))<<4) + A_D(*(MacBuf+13));
+  *MAC++ = (A_D(*(MacBuf+15))<<4) + A_D(*(MacBuf+16));
+}
+
+static void GetEnvMacAddr(UINT8* MacBuf)
+{
+  EFI_STATUS  Status;
+  UINTN       Size;
+  CHAR16      Buf[20];
+
+  Size = sizeof(Buf);
+  Status = gRT->GetVariable(L"RGMII_MAC0",
+                            &gShellVariableGuid,
+                            0,
+                            &Size,
+                            (void *)Buf);
+
+  if (EFI_ERROR (Status)) {
+    DEBUG((EFI_D_ERROR, "GetVariable MAC ERROR !!!"));
+    *((UINT8*)MacBuf+0) = apm_mac_addr[0];
+    *((UINT8*)MacBuf+1) = apm_mac_addr[1];
+    *((UINT8*)MacBuf+2) = apm_mac_addr[2];
+    *((UINT8*)MacBuf+3) = apm_mac_addr[3];
+    *((UINT8*)MacBuf+4) = apm_mac_addr[4];
+    *((UINT8*)MacBuf+5) = apm_mac_addr[5];
+  } else {
+    UINT8       MAC[20];
+
+    AsciiStrToEthAddr (Buf, MAC);
+    DEBUG((EFI_D_ERROR, "GetVariable  MAC: %2x:%2x:%2x:%2x:%2x:%x !!!", 
+          MAC[0], MAC[1], MAC[2], MAC[3], MAC[4], MAC[5]));
+
+    apm_mac_addr[0] = *((UINT8*)MacBuf) = MAC[0];
+    apm_mac_addr[1] = *((UINT8*)MacBuf+1) = MAC[1];
+    apm_mac_addr[2] = *((UINT8*)MacBuf+2) = MAC[2];
+    apm_mac_addr[3] = *((UINT8*)MacBuf+3) = MAC[3];
+    apm_mac_addr[4] = *((UINT8*)MacBuf+4) = MAC[4];
+    apm_mac_addr[5] = *((UINT8*)MacBuf+5) = MAC[5];
+  }
+}
+
 EFI_STATUS
 APMXGeneNet_Initialize (
   IN OUT  UINT32                       *InterfaceCount,
@@ -27,12 +80,7 @@ APMXGeneNet_Initialize (
   *InterfaceCount = 1;
   InterfaceInfoBuffer[0].InterfaceIndex = 0;
 #if 1	//TODO	original
-  InterfaceInfoBuffer[0].MacAddr.Addr[0]=0x0;
-  InterfaceInfoBuffer[0].MacAddr.Addr[1]=0x11;
-  InterfaceInfoBuffer[0].MacAddr.Addr[2]=0x22;
-  InterfaceInfoBuffer[0].MacAddr.Addr[3]=0x33;
-  InterfaceInfoBuffer[0].MacAddr.Addr[4]=0x44;
-  InterfaceInfoBuffer[0].MacAddr.Addr[5]=0x55;
+  GetEnvMacAddr(InterfaceInfoBuffer[0].MacAddr.Addr);
 #endif
   return EFI_SUCCESS;
 }
