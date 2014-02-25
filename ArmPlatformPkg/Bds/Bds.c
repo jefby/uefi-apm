@@ -478,8 +478,18 @@ BdsEntry (
     UnicodeSPrint (gST->FirmwareVendor, Size, L"%a EFI %a %a", PcdGetPtr(PcdFirmwareVendor), __DATE__, __TIME__);
   }
 
+  // If Boot Order does not exist then create a default entry
+  DEBUG((EFI_D_VERBOSE, "Install default boot entries\n"));
+  DefineDefaultBootEntries ();
+
+  // Now we need to setup the EFI System Table with information about the console devices.
+  InitializeConsole ();
+
+  // Show banner
+  ArmPlatformShowBoardBanner (Print);
+
   //
-  // Fixup Table CRC after we updated Firmware Vendor
+  // Update the CRC32 in the EFI System Table header
   //
   gST->Hdr.CRC32 = 0;
   Status = gBS->CalculateCrc32 ((VOID*)gST, gST->Hdr.HeaderSize, &gST->Hdr.CRC32);
@@ -500,6 +510,11 @@ BdsEntry (
               BootNextSize, BootNext);
 
     FreePool (BootNext);
+    
+    // Delete the BootNext environment variable
+    gRT->SetVariable (L"BootNext", &gEfiGlobalVariableGuid,
+        EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+        0, NULL);
 
     // Start the requested Boot Entry
     Status = BdsStartBootOption (BootVariableName);
@@ -510,10 +525,6 @@ BdsEntry (
         Print(L"Fail to start BootNext.\n");
       }
 
-      // Delete the BootNext environment variable
-      gRT->SetVariable (L"BootNext", &gEfiGlobalVariableGuid,
-          EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
-          0, NULL);
     }
 
     // Clear BootCurrent variable
@@ -521,23 +532,6 @@ BdsEntry (
         EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
         0, NULL);
   }
-
-  // If Boot Order does not exist then create a default entry
-  DEBUG((EFI_D_VERBOSE, "Install default boot entries\n"));
-  DefineDefaultBootEntries ();
-
-  // Now we need to setup the EFI System Table with information about the console devices.
-  InitializeConsole ();
-
-  // Show banner
-  ArmPlatformShowBoardBanner (Print);
-
-  //
-  // Update the CRC32 in the EFI System Table header
-  //
-  gST->Hdr.CRC32 = 0;
-  Status = gBS->CalculateCrc32 ((VOID*)gST, gST->Hdr.HeaderSize, &gST->Hdr.CRC32);
-  ASSERT_EFI_ERROR (Status);
 
   // Timer before initiating the default boot selection
   StartDefaultBootOnTimeout ();
