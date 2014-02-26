@@ -289,11 +289,11 @@ BdsBootLinuxFdt (
   // If that fails fall back to try loading it within LINUX_KERNEL_MAX_OFFSET of memory start.
   LinuxImage = PcdGet64(PcdSystemMemoryBase) + 0x80000;
   DEBUG((EFI_D_ERROR, "Load Linux image "));
-  Status = BdsLoadImage (LinuxKernelDevicePath, AllocateAddress, &LinuxImage, &LinuxImageSize);
+  Status = BdsLoadImage (&LinuxKernelDevicePath, AllocateAddress, &LinuxImage, &LinuxImageSize);
   if (EFI_ERROR(Status)) {
     // Try again but give the loader more freedom of where to put the image.
     LinuxImage = LINUX_KERNEL_MAX_OFFSET;
-    Status = BdsLoadImage (LinuxKernelDevicePath, AllocateMaxAddress, &LinuxImage, &LinuxImageSize);
+    Status = BdsLoadImage (&LinuxKernelDevicePath, AllocateMaxAddress, &LinuxImage, &LinuxImageSize);
     if (EFI_ERROR(Status)) {
       Print (L"ERROR: Did not find Linux kernel.\n");
       return Status;
@@ -309,10 +309,10 @@ BdsBootLinuxFdt (
   if (InitrdDevicePath) {
     InitrdImageBase = LINUX_KERNEL_MAX_OFFSET;
     DEBUG((EFI_D_ERROR, "Load initrd "));
-    Status = BdsLoadImage (InitrdDevicePath, AllocateMaxAddress, &InitrdImageBase, &InitrdImageBaseSize);
+    Status = BdsLoadImage (&InitrdDevicePath, AllocateMaxAddress, &InitrdImageBase, &InitrdImageBaseSize);
     if (Status == EFI_OUT_OF_RESOURCES) {
       Print (L"WARNING: Unable to load initrd image at desire location\n");
-      Status = BdsLoadImage (InitrdDevicePath, AllocateAnyPages, &InitrdImageBase, &InitrdImageBaseSize);
+      Status = BdsLoadImage (&InitrdDevicePath, AllocateAnyPages, &InitrdImageBase, &InitrdImageBaseSize);
     }
     if (EFI_ERROR (Status)) {
       Print (L"ERROR: Did not find initrd image.\n");
@@ -343,7 +343,7 @@ BdsBootLinuxFdt (
   // The FDT will be reloaded later to a more appropriate location for the Linux kernel.
   FdtBlobBase = LINUX_KERNEL_MAX_OFFSET;
   DEBUG((EFI_D_ERROR, "Load Fdt "));
-  Status = BdsLoadImage (FdtDevicePath, AllocateMaxAddress, &FdtBlobBase, &FdtBlobSize);
+  Status = BdsLoadImage (&FdtDevicePath, AllocateMaxAddress, &FdtBlobBase, &FdtBlobSize);
   if (EFI_ERROR(Status)) {
     Print (L"ERROR: Did not find Device Tree blob.\n");
     goto EXIT_FREE_INITRD;
@@ -475,7 +475,7 @@ BdsBootLinuxUEFI (
   //  Defined in ArmPkg.dec
   LinuxImage = LINUX_KERNEL_MAX_OFFSET;
   DEBUG((EFI_D_ERROR, "Load Linux image "));
-  Status = BdsLoadImage (LinuxKernelDevicePath, AllocateMaxAddress, &LinuxImage, &LinuxImageSize);
+  Status = BdsLoadImage (&LinuxKernelDevicePath, AllocateMaxAddress, &LinuxImage, &LinuxImageSize);
   if (EFI_ERROR(Status)) {
     Print (L"ERROR: Did not find Linux kernel.\n");
     return Status;
@@ -488,7 +488,7 @@ BdsBootLinuxUEFI (
     //  Defined in ArmPkt.dec
     InitrdImage = LINUX_INITRD_MAX_OFFSET;
     DEBUG((EFI_D_ERROR, "Load initrd "));
-    Status = BdsLoadImage (InitrdDevicePath, AllocateAnyPages, &InitrdImage, &InitrdImageSize);
+    Status = BdsLoadImage (&InitrdDevicePath, AllocateAnyPages, &InitrdImage, &InitrdImageSize);
     if (EFI_ERROR(Status)) {
       Print (L"ERROR: Did not find initrd image.\n");
       return Status;

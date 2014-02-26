@@ -118,7 +118,7 @@ InitializeConsolePipe (
   while (ConsoleDevicePaths != NULL) {
     DevicePath = GetNextDevicePathInstance (&ConsoleDevicePaths, &Size);
 
-    Status = BdsConnectDevicePath (DevicePath, Handle, NULL);
+    Status = BdsConnectDevicePath (&DevicePath, Handle, NULL);
     DEBUG_CODE_BEGIN();
       if (EFI_ERROR(Status)) {
         // We convert back to the text representation of the device Path
@@ -510,7 +510,7 @@ BdsEntry (
               BootNextSize, BootNext);
 
     FreePool (BootNext);
-    
+
     // Delete the BootNext environment variable
     gRT->SetVariable (L"BootNext", &gEfiGlobalVariableGuid,
         EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,

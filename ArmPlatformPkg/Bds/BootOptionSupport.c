@@ -399,7 +399,7 @@ BdsLoadOptionFileSystemUpdateDevicePath (
   DevicePath = DuplicateDevicePath (OldDevicePath);
 
   EndingDevicePath = (FILEPATH_DEVICE_PATH*)GetLastDevicePathNode (DevicePath);
- 
+
   Print(L"File path of the %s: ", FileName);
   StrnCpy (BootFilePath, EndingDevicePath->PathName, BOOT_DEVICE_FILEPATH_MAX);
   Status = EditHIInputStr (BootFilePath, BOOT_DEVICE_FILEPATH_MAX);
@@ -731,7 +731,7 @@ BdsLoadOptionPxeIsSupported (
   EFI_DEVICE_PATH_PROTOCOL  *RemainingDevicePath;
   EFI_PXE_BASE_CODE_PROTOCOL  *PxeBcProtocol;
 
-  Status = BdsConnectDevicePath (DevicePath, &Handle, &RemainingDevicePath);
+  Status = BdsConnectDevicePath (&DevicePath, &Handle, &RemainingDevicePath);
   if (EFI_ERROR(Status)) {
     return FALSE;
   }
@@ -905,7 +905,7 @@ BdsLoadOptionTftpIsSupported (
   EFI_DEVICE_PATH  *NextDevicePath;
   EFI_PXE_BASE_CODE_PROTOCOL  *PxeBcProtocol;
 
-  Status = BdsConnectDevicePath (DevicePath, &Handle, &RemainingDevicePath);
+  Status = BdsConnectDevicePath (&DevicePath, &Handle, &RemainingDevicePath);
   if (EFI_ERROR(Status)) {
     return FALSE;
   }
