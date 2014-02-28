@@ -395,7 +395,7 @@ StartDefaultBootOnTimeout (
       WaitIndex = 0;
       Print(L"The default boot selection will start in ");
       while ((Timeout > 0) && (WaitIndex == 0)) {
-        Print(L"%3d seconds",Timeout);
+        Print(L"%3d second%s",Timeout, Timeout > 1 ? "s" : " ");
         gBS->WaitForEvent (2, WaitList, &WaitIndex);
         if (WaitIndex == 0) {
           Print(L"\b\b\b\b\b\b\b\b\b\b\b");
