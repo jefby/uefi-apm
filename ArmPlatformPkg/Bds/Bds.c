@@ -24,6 +24,8 @@
 
 EFI_HANDLE mImageHandle;
 
+extern CONST UINT8 DeviceTreeBuff[];
+
 STATIC
 EFI_STATUS
 GetConsoleDevicePathFromVariable (
@@ -494,6 +496,16 @@ BdsEntry (
   gST->Hdr.CRC32 = 0;
   Status = gBS->CalculateCrc32 ((VOID*)gST, gST->Hdr.HeaderSize, &gST->Hdr.CRC32);
   ASSERT_EFI_ERROR (Status);
+
+  if ((DeviceTreeBuff[0] == 0xd0) && 
+      (DeviceTreeBuff[1] == 0x0d) &&
+      (DeviceTreeBuff[2] == 0xfe) &&
+      (DeviceTreeBuff[3] == 0xed)) {
+    EFI_GUID DeviceTreeGuid = { 0xB1B621D5, 0xF19C, 0x41A5,
+                               { 0x83, 0x0B, 0xD9, 0x15,
+                                 0x2C, 0x69, 0xAA, 0xE0 }};
+    Status = gBS->InstallConfigurationTable(&DeviceTreeGuid, (void *) DeviceTreeBuff);
+  }
 
   // If BootNext environment variable is defined then we just load it !
   BootNextSize = sizeof(UINT16);

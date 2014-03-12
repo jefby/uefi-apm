@@ -26,7 +26,7 @@
 [Defines]
   PLATFORM_NAME                  = APMXGene-Mustang
   PLATFORM_GUID                  = edcba8fd-a24e-489c-b4e9-93561f576500
-  PLATFORM_VERSION               = 1.1-RedHat-0.4
+  PLATFORM_VERSION               = 1.1-RedHat-0.7
   DSC_SPECIFICATION              = 0x00010005
   OUTPUT_DIRECTORY               = Build/APMXGene-Mustang
   SUPPORTED_ARCHITECTURES        = AARCH64
@@ -102,7 +102,7 @@
    gArmTokenSpaceGuid.PcdSystemMemorySize|0x100000000
 
 [PcdsFixedAtBuild.common]
-   gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"1.0.0-rh-0.4"
+   gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"1.0.0-rh-0.7"
    gArmPlatformTokenSpaceGuid.PcdFirmwareVendor|"X-Gene Mustang Board"
    gEmbeddedTokenSpaceGuid.PcdEmbeddedPrompt|"Mustang"
    gEmbeddedTokenSpaceGuid.PcdTimerPeriod|100000
@@ -387,6 +387,9 @@
    MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
    ArmPlatformPkg/APMXGenePkg/AcpiPlatformDxe/AcpiPlatformDxe.inf
    ArmPkg/Drivers/AcpiTables/APMXGene/AcpiTables.inf
+
+   # DeviceTree Support
+   ArmPlatformPkg/APMXGenePkg/DeviceTree/DeviceTree.inf
 
    #
    # Bds

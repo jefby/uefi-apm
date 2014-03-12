@@ -24,12 +24,17 @@
 
   ENTRY_POINT                    = BdsInitialize
 
+[Components.common]
+   # DeviceTree Support
+   ArmPlatformPkg/APMXGenePkg/DeviceTree/DeviceTree.inf
+
 [Sources.common]
   Bds.c
   BdsHelper.c
   BootMenu.c
   BootOption.c
   BootOptionSupport.c
+  ../APMXGenePkg/DeviceTree/DeviceTree.c
 
 [Packages]
   MdePkg/MdePkg.dec
