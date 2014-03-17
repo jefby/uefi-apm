@@ -13,6 +13,8 @@
 
 #include "SnpDxe.h"
 
+EFI_EVENT             EfiExitBootServicesEvent = (EFI_EVENT)NULL;
+
 extern EFI_STATUS
 APMXGeneNet_Initialize (
   IN OUT  UINT32                       *InterfaceCount,
@@ -51,6 +53,10 @@ APMXGeneNet_Transmit (
   IN  UINT16                          *Protocol
   );
 
+extern VOID
+APMXGeneNet_Halt (
+  IN  UINT32                          Index
+  );
 
 EFI_DRIVER_BINDING_PROTOCOL gSnpDxeBinding = {
   SnpDxeBindingSupported,
@@ -941,6 +947,24 @@ SNP_INSTANCE_DATA gSnpDxeInstanceTemplate = {
 };
 
 /**
+    Disable the ethnet
+**/
+VOID
+EFIAPI
+ExitBootServicesEvent (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
+  )
+{
+  SNP_GLOBAL_DATA   *This = Context;
+  SNP_INSTANCE_DATA *Instance;
+
+  Instance = SNP_INSTANCE_DATA_FROM_SNP_THIS (This);
+
+  APMXGeneNet_Halt (Instance->InterfaceInfo.InterfaceIndex);
+}
+
+/**
   Initialize the driver's global data.
 
   @param  This                  Pointer to the global context data.
@@ -1077,6 +1101,11 @@ DBG(" SnpDxeInitializeGlobalData Addr[5]=0x%x\n", NetInterfaceInfoBuffer[0].MacA
 
 #endif
   }
+  // Register for an ExitBootServicesEvent
+  Status = gBS->CreateEvent (EVT_SIGNAL_EXIT_BOOT_SERVICES, TPL_NOTIFY,
+			     ExitBootServicesEvent, This, &EfiExitBootServicesEvent);
+  ASSERT_EFI_ERROR (Status);
+
   DBG("Exit SnpDxeInitializeGlobalData Index=%d\n", Index);
   return EFI_SUCCESS;
 

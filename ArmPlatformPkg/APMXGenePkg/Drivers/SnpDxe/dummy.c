@@ -172,3 +172,13 @@ putshex((unsigned char*)DestAddr, 6);
   return EFI_SUCCESS;
 }
 
+VOID
+APMXGeneNet_Halt (
+  IN UINT32 Index;
+  )
+{
+  if (eth_initialized) {
+     /* stop rx and tx */
+     (&emac_dev[0])->halt(&emac_dev[0]);
+  }
+}
