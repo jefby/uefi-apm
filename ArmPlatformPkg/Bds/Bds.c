@@ -19,6 +19,11 @@
 #include <Library/ArmPlatformLib.h>
 
 #include <Protocol/Bds.h>
+#include <Protocol/PxeBaseCode.h>
+#include <Protocol/SimpleFileSystem.h>
+#include <Protocol/SimpleNetwork.h>
+
+#include <Guid/FileSystemInfo.h>
 
 #define EFI_SET_TIMER_TO_SECOND   10000000
 
@@ -214,154 +219,45 @@ InitializeConsole (
 }
 
 EFI_STATUS
-DefineDefaultBootEntries (
-  VOID
-  )
+BdsStartPXE (
+)
 {
-  BDS_LOAD_OPTION*                    BdsLoadOption;
-  UINTN                               Size;
-  EFI_STATUS                          Status;
-  EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL* EfiDevicePathFromTextProtocol;
-  EFI_DEVICE_PATH*                    BootDevicePath;
-  ARM_BDS_LOADER_ARGUMENTS*           BootArguments;
-  ARM_BDS_LOADER_TYPE                 BootType;
-  EFI_DEVICE_PATH*                    InitrdPath;
-  EFI_DEVICE_PATH*                    FdtLocalPath;
-  UINTN                               CmdLineSize;
-  UINTN                               InitrdSize;
-  UINTN                               FdtLocalSize;
+  EFI_STATUS                        Status;
+  UINTN                             HandleCount;
+  EFI_HANDLE                        *HandleBuffer;
+  UINTN                             Index;
+  EFI_DEVICE_PATH_PROTOCOL*         PXEDevicePath;
 
-  //
-  // If Boot Order does not exist then create a default entry
-  //
-  Size = 0;
-  Status = gRT->GetVariable (L"BootOrder", &gEfiGlobalVariableGuid, NULL, &Size, NULL);
-  if (Status == EFI_NOT_FOUND) {
-    if ((PcdGetPtr(PcdDefaultBootDevicePath) == NULL) || (StrLen ((CHAR16*)PcdGetPtr(PcdDefaultBootDevicePath)) == 0)) {
-      return EFI_UNSUPPORTED;
-    }
-
-    Status = gBS->LocateProtocol (&gEfiDevicePathFromTextProtocolGuid, NULL, (VOID **)&EfiDevicePathFromTextProtocol);
-    if (EFI_ERROR(Status)) {
-      // You must provide an implementation of DevicePathFromTextProtocol in your firmware (eg: DevicePathDxe)
-      DEBUG((EFI_D_ERROR,"Error: Bds requires DevicePathFromTextProtocol\n"));
-      return Status;
-    }
-    BootDevicePath = EfiDevicePathFromTextProtocol->ConvertTextToDevicePath ((CHAR16*)PcdGetPtr(PcdDefaultBootDevicePath));
-
-    DEBUG_CODE_BEGIN();
-      // We convert back to the text representation of the device Path to see if the initial text is correct
-      EFI_DEVICE_PATH_TO_TEXT_PROTOCOL* DevicePathToTextProtocol;
-      CHAR16* DevicePathTxt;
-
-      Status = gBS->LocateProtocol(&gEfiDevicePathToTextProtocolGuid, NULL, (VOID **)&DevicePathToTextProtocol);
-      ASSERT_EFI_ERROR(Status);
-      DevicePathTxt = DevicePathToTextProtocol->ConvertDevicePathToText (BootDevicePath, TRUE, TRUE);
-
-      ASSERT (StrCmp ((CHAR16*)PcdGetPtr(PcdDefaultBootDevicePath), DevicePathTxt) == 0);
-
-      if (DevicePathTxt != NULL){
-        FreePool (DevicePathTxt);
-      }
-    DEBUG_CODE_END();
-
-    // Create the entry is the Default values are correct
-    if (BootDevicePath != NULL) {
-      CHAR16 BootDescription[128];
-
-      BootType = (ARM_BDS_LOADER_TYPE)PcdGet32 (PcdDefaultBootType);
-
-      /* Create an entry for Linux UEFI */
-      if ((BootType == BDS_LOADER_KERNEL_LINUX_ATAG) ||
-          (BootType == BDS_LOADER_KERNEL_LINUX_GLOBAL_FDT) ||
-          (BootType == BDS_LOADER_KERNEL_LINUX_LOCAL_FDT) ||
-          (BootType == BDS_LOADER_KERNEL_LINUX_UEFI)) {
-        CmdLineSize = AsciiStrSize ((CHAR8*)PcdGetPtr(PcdDefaultBootArgument));
-        InitrdPath = EfiDevicePathFromTextProtocol->ConvertTextToDevicePath ((CHAR16*)PcdGetPtr(PcdDefaultBootInitrdPath));
-        if (InitrdPath != NULL) {
-          InitrdSize = GetDevicePathSize (InitrdPath);
-        } else {
-          InitrdSize = 0;
-        }
-        BootArguments = (ARM_BDS_LOADER_ARGUMENTS*)AllocatePool (sizeof(ARM_BDS_LOADER_ARGUMENTS) + CmdLineSize + InitrdSize);
-        BootArguments->LinuxArguments.CmdLineSize = CmdLineSize;
-        BootArguments->LinuxArguments.InitrdSize = InitrdSize;
-        CopyMem ((VOID*)(BootArguments + 1), (CHAR8*)PcdGetPtr(PcdDefaultBootArgument), CmdLineSize+1);
-        CopyMem ((VOID*)((EFI_PHYSICAL_ADDRESS)(BootArguments + 1) + CmdLineSize), InitrdPath, InitrdSize);
-      } else {
-         BootArguments = NULL;
-      }
-      UnicodeSPrint(BootDescription, sizeof(BootDescription),
-               L"UEFI %s", (CHAR16 *) PcdGetPtr(PcdDefaultBootDescription));
-      BootOptionCreate (LOAD_OPTION_ACTIVE | LOAD_OPTION_CATEGORY_BOOT,
-        BootDescription,
-        BootDevicePath,
-        BDS_LOADER_KERNEL_LINUX_UEFI,
-        BootArguments,
-        &BdsLoadOption
-        );
-      if (BdsLoadOption != NULL){
-        FreePool (BdsLoadOption);
-      }
-
-      /* Create an entry for Linux FDT */
-      if ((BootType == BDS_LOADER_KERNEL_LINUX_ATAG) ||
-          (BootType == BDS_LOADER_KERNEL_LINUX_GLOBAL_FDT) ||
-          (BootType == BDS_LOADER_KERNEL_LINUX_LOCAL_FDT) ||
-          (BootType == BDS_LOADER_KERNEL_LINUX_UEFI)) {
-        CmdLineSize = AsciiStrSize ((CHAR8*)PcdGetPtr(PcdDefaultBootArgument));
-        InitrdPath = EfiDevicePathFromTextProtocol->ConvertTextToDevicePath ((CHAR16*)PcdGetPtr(PcdDefaultBootInitrdPath));
-        if (InitrdPath != NULL) {
-          InitrdSize = GetDevicePathSize (InitrdPath);
-        } else {
-          InitrdSize = 0;
-        }
-        if (BootType == BDS_LOADER_KERNEL_LINUX_LOCAL_FDT) {
-          FdtLocalPath = EfiDevicePathFromTextProtocol->ConvertTextToDevicePath ((CHAR16*)PcdGetPtr(PcdDefaultFdtLocalDevicePath));
-          FdtLocalSize = GetDevicePathSize (FdtLocalPath);
-        } else {
-          FdtLocalPath = NULL;
-          FdtLocalSize = 0;
-        }
-        BootArguments = (ARM_BDS_LOADER_ARGUMENTS*)AllocatePool (sizeof(ARM_BDS_LOADER_ARGUMENTS) + CmdLineSize + InitrdSize + FdtLocalSize);
-        if ( BootArguments != NULL ) {
-          BootArguments->LinuxArguments.CmdLineSize = CmdLineSize;
-          BootArguments->LinuxArguments.InitrdSize = InitrdSize;
-          BootArguments->LinuxArguments.FdtLocalSize = FdtLocalSize;
-
-          CopyMem ((VOID*)(BootArguments + 1), (CHAR8*)PcdGetPtr(PcdDefaultBootArgument), CmdLineSize);
-          CopyMem ((VOID*)((UINTN)(BootArguments + 1) + CmdLineSize), InitrdPath, InitrdSize);
-          CopyMem ((VOID*)((UINTN)(BootArguments + 1) + CmdLineSize + InitrdSize), FdtLocalPath, FdtLocalSize);
-        }
-        if (FdtLocalPath != NULL ) {
-          FreePool (FdtLocalPath);
-        }
-        if (InitrdPath != NULL ) {
-          FreePool (InitrdPath);
-        }
-      } else {
-        BootArguments = NULL;
-      }
-
-      BootOptionCreate (LOAD_OPTION_ACTIVE | LOAD_OPTION_CATEGORY_BOOT,
-        (CHAR16*)PcdGetPtr(PcdDefaultBootDescription),
-        BootDevicePath,
-        BootType,
-        BootArguments,
-        &BdsLoadOption
-        );
-      if (BdsLoadOption != NULL){
-        FreePool (BdsLoadOption);
-      }
-      if (BootDevicePath != NULL){
-        FreePool (BootDevicePath);
-      }
-    } else {
-      Status = EFI_UNSUPPORTED;
-    }
+  // List all the PXE Protocols
+  Status = gBS->LocateHandleBuffer (ByProtocol, &gEfiPxeBaseCodeProtocolGuid,
+                                    NULL, &HandleCount, &HandleBuffer);
+  if (EFI_ERROR (Status)) {
+    return Status;
   }
+  for (Index = 0; Index < HandleCount; Index++) {
+    // We only select the handle WITH a Device Path AND the PXE Protocol
+    Status = gBS->HandleProtocol (HandleBuffer[Index],
+                                  &gEfiDevicePathProtocolGuid,
+                                  (VOID **)&PXEDevicePath);
+    if (!EFI_ERROR(Status)) {
+      EFI_SIMPLE_NETWORK_PROTOCOL*      SimpleNet;
+      EFI_MAC_ADDRESS                   *Mac;
+      // Get MAC Address and print it
+      Status = gBS->LocateProtocol (&gEfiSimpleNetworkProtocolGuid, NULL,
+                                    (VOID **)&SimpleNet);
+      if (!EFI_ERROR(Status)) {
+        Mac = &SimpleNet->Mode->CurrentAddress;
+        Print (L"Attempting PXE boot on MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+               Mac->Addr[0], Mac->Addr[1], Mac->Addr[2], Mac->Addr[3],
+               Mac->Addr[4], Mac->Addr[5]);
+      }
+      Status = BdsStartEfiApplication (mImageHandle, PXEDevicePath, 0, NULL);
+      // On a success, we never return
+      if (!EFI_ERROR(Status)) {
+        break;
+      }
 
-  return EFI_SUCCESS;
+  return Status;
 }
 
 EFI_STATUS
@@ -415,18 +311,26 @@ StartDefaultBootOnTimeout (
     // In case of Timeout we start the default boot selection
     if (Timeout == 0) {
       // Get the Boot Option Order from the environment variable (a default value should have been created)
-      GetGlobalEnvironmentVariable (L"BootOrder", NULL, &BootOrderSize, (VOID**)&BootOrder);
+      Status = GetGlobalEnvironmentVariable (L"BootOrder", NULL, &BootOrderSize, (VOID**)&BootOrder);
 
-      for (Index = 0; Index < BootOrderSize / sizeof (UINT16); Index++) {
+      if (EFI_ERROR(Status)) {
+        BootOrderSize = 0;
+      }
+
+      for (Index = 0; (Index < 32) && (Index < BootOrderSize / sizeof (UINT16)); Index++) {
         UnicodeSPrint (BootVariableName, 9 * sizeof(CHAR16), L"Boot%04X", BootOrder[Index]);
         Status = BdsStartBootOption (BootVariableName);
         if(!EFI_ERROR(Status)){
-        	// Boot option returned successfully, hence don't need to start next boot option
-        	break;
+          // Boot option returned successfully, hence don't need to start next boot option
+          break;
         }
         // In case of success, we should not return from this call.
       }
       FreePool (BootOrder);
+
+      // Now we should look for a PXE server
+      // Again, if this returned at all, that means it failed
+      Status = BdsStartPXE();
     }
   }
   return EFI_SUCCESS;
@@ -480,10 +384,6 @@ BdsEntry (
     UnicodeSPrint (gST->FirmwareVendor, Size, L"%a EFI %a %a", PcdGetPtr(PcdFirmwareVendor), __DATE__, __TIME__);
   }
 
-  // If Boot Order does not exist then create a default entry
-  DEBUG((EFI_D_VERBOSE, "Install default boot entries\n"));
-  DefineDefaultBootEntries ();
-
   // Now we need to setup the EFI System Table with information about the console devices.
   InitializeConsole ();
 
@@ -497,7 +397,7 @@ BdsEntry (
   Status = gBS->CalculateCrc32 ((VOID*)gST, gST->Hdr.HeaderSize, &gST->Hdr.CRC32);
   ASSERT_EFI_ERROR (Status);
 
-  if ((DeviceTreeBuff[0] == 0xd0) && 
+  if ((DeviceTreeBuff[0] == 0xd0) &&
       (DeviceTreeBuff[1] == 0x0d) &&
       (DeviceTreeBuff[2] == 0xfe) &&
       (DeviceTreeBuff[3] == 0xed)) {
