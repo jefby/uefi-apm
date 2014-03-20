@@ -29,7 +29,7 @@
 
 EFI_HANDLE mImageHandle;
 
-extern CONST UINT8 DeviceTreeBuff[];
+extern UINT8 DeviceTreeBuff[];
 
 STATIC
 EFI_STATUS
@@ -338,6 +338,46 @@ StartDefaultBootOnTimeout (
   return EFI_SUCCESS;
 }
 
+VOID
+SetupDeviceTree(
+  )
+{
+  EFI_STATUS          Status;
+  UINT8               *DeviceTreeVar;
+  UINTN               DeviceTreeVarSize;
+  UINTN               Count = 0;
+  CHAR16              DeviceTreeName[14];
+  UINT8               *Traveller = DeviceTreeBuff;
+
+  /* DeviceTree is encoded in ~1K blocks and the DeviceTreeBuff is 16K */
+  do {
+    UnicodeSPrint(DeviceTreeName, 13 * sizeof(CHAR16), L"DeviceTree%02d", Count);
+    DeviceTreeVarSize = sizeof(UINT16);
+    Status = GetGlobalEnvironmentVariable (DeviceTreeName, NULL, 
+                                    &DeviceTreeVarSize, (VOID**)&DeviceTreeVar);
+    if (EFI_ERROR(Status)) {
+      break;
+    } else {
+      /* DeviceTree found. Copy it into DeviceTreeBuff */
+      CopyMem(Traveller, DeviceTreeVar, DeviceTreeVarSize);
+
+      FreePool(DeviceTreeVar);
+      Traveller += DeviceTreeVarSize;
+    }
+    Count += 1;
+  } while (Count < 16);
+
+  if ((DeviceTreeBuff[0] == 0xd0) &&
+      (DeviceTreeBuff[1] == 0x0d) &&
+      (DeviceTreeBuff[2] == 0xfe) &&
+      (DeviceTreeBuff[3] == 0xed)) {
+    EFI_GUID DeviceTreeGuid = { 0xB1B621D5, 0xF19C, 0x41A5,
+                               { 0x83, 0x0B, 0xD9, 0x15,
+                                 0x2C, 0x69, 0xAA, 0xE0 }};
+    Status = gBS->InstallConfigurationTable(&DeviceTreeGuid, (void *) DeviceTreeBuff);
+  }
+}
+
 /**
   This function uses policy data from the platform to determine what operating
   system or system utility should be loaded and invoked.  This function call
@@ -399,15 +439,7 @@ BdsEntry (
   Status = gBS->CalculateCrc32 ((VOID*)gST, gST->Hdr.HeaderSize, &gST->Hdr.CRC32);
   ASSERT_EFI_ERROR (Status);
 
-  if ((DeviceTreeBuff[0] == 0xd0) &&
-      (DeviceTreeBuff[1] == 0x0d) &&
-      (DeviceTreeBuff[2] == 0xfe) &&
-      (DeviceTreeBuff[3] == 0xed)) {
-    EFI_GUID DeviceTreeGuid = { 0xB1B621D5, 0xF19C, 0x41A5,
-                               { 0x83, 0x0B, 0xD9, 0x15,
-                                 0x2C, 0x69, 0xAA, 0xE0 }};
-    Status = gBS->InstallConfigurationTable(&DeviceTreeGuid, (void *) DeviceTreeBuff);
-  }
+  SetupDeviceTree();
 
   // If BootNext environment variable is defined then we just load it !
   BootNextSize = sizeof(UINT16);

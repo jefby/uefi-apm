@@ -14,4 +14,4 @@
  * *
  * **/
 
-CONST UINT8 DeviceTreeBuff[] = {
+UINT8 DeviceTreeBuff[16384] = {
