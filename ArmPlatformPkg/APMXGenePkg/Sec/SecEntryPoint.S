@@ -190,6 +190,10 @@ _InitMem:
         /* Initialize Init Boot Memory */
 	bl	ASM_PFX(ArmPlatformSecBootMemoryInit)
 
+	ldr	x0, =0x78020000
+	movz	w1, #0xa0		/* ICC bypass */
+	str	w1, [x0]
+
 _IdentifyPrimary:
 	/* SMP - Find primary core - Read PMD disable efuse */
 	ldr	x0, =APM88XXX_EFUSE_ADDR
