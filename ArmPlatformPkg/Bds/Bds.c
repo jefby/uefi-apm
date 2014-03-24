@@ -256,6 +256,8 @@ BdsStartPXE (
       if (!EFI_ERROR(Status)) {
         break;
       }
+    }
+  }
 
   return Status;
 }
