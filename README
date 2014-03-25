@@ -17,6 +17,7 @@ apm/1.11.06-beta_rc => source straight from APM unchanged
 apm/merge => merged Linaro and APM, always most recent
 apm/build => merged Linaro and APM, changes for Linaro build system
              (development branch)
+apm/merge-patched => contents of apm/build + latest Red Hat patches
 
 master => not really used
 
