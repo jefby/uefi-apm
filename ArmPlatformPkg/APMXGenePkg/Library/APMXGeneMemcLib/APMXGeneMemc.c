@@ -228,7 +228,7 @@ VOID MMUSetup(VOID)
   ArmSetTTBR0((VOID *)Reg);
   
   /* setup TCR_EL2 */
-  Reg = 0x3ULL << 32;  // 42bit PA
+  Reg = 0x3ULL << 16;  // 42bit PA
   ArmSetTCR(Reg);
 
   /* setup MAIR_EL2

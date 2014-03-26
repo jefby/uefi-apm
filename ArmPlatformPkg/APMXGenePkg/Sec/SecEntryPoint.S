@@ -165,26 +165,13 @@ reset_other_regs:
         msr     VBAR_EL2, x0
         msr     VBAR_EL1, x0
 
-exit_to_el1:
-    //ldr  x0, =0x78010f00
-	//ldr  w1, =0x1000000
-	//str  w1, [x0]
-
-    movz    x12, 0
-    movk    x12, 0x8000, LSL #16 /* set rw to 64 bit */
-    msr     HCR_EL2, x12
-    adr     x12, start_ns
-    msr     elr_el2, x12
-    movk    x12, 0xC5            /* C for fast, regular irq disabled, (M=5) 5 is for EL1h */
-    msr     spsr_el2, x12
-    eret
-
-start_ns:
-	mrs     x5, SCTLR_EL1
-	orr     x5, x5, #0x1000         /* Icache enable */
-	orr     x5, x5, #0x4            /* Dcache enable */
-	msr     SCTLR_EL1, x5
-    isb
+        /* stay in EL2 */
+        movz    x12, 0
+        movk    x12, 0x8000, LSL #16 /* set rw to 64 bit */
+        orr     x12, x12, 0x18 /* enable IRQ and FIQ */
+        msr     HCR_EL2, x12
+        movk    x12, 0xC9      /* C for fast, regular irq disabled, (M=9) 9 is for EL2h */
+        msr     spsr_el2, x12
 
 _InitMem:
         /* Initialize Init Boot Memory */
