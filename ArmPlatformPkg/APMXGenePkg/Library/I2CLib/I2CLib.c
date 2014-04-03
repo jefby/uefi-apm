@@ -21,6 +21,9 @@
 
 #include "I2CLib.h"
 
+//#define I2C_DBG 1
+//#define I2C_PRINT 1
+
 #ifdef I2C_DBG
 #define DBG(arg...) DEBUG ((EFI_D_ERROR,## arg))
 #else
@@ -51,9 +54,6 @@ UINTN I2c_Bus_Num  = CONFIG_SYS_SPD_BUS_NUM;
 #define I2c_Sync() { asm volatile ("dmb ish" : : : "memory"); }
 
 UINTN I2c_Hw_Init_Done  = 0;
-UINT32 I2c_Eeprom_Speed = CONFIG_SYS_I2C_SPEED;
-UINT32 I2c_Eeprom_Addr = CONFIG_SYS_I2C_EEPROM_ADDR;
-UINT32 I2c_Eeprom_Addr_Len = CONFIG_SYS_I2C_EEPROM_ADDR_LEN;
 
 
 /* Keeping i2c_poll in micro second, 10 times the signaling period */
@@ -92,11 +92,13 @@ UINT32 I2c_Scl_Min[4][3] = {  /* in nano seconds */
   [I2C_HS_100PF] = {  60,  120, 300},  /* HS (High Speed) 100pf */
 };
 
+inline
 UINT32 Read32(UINT32 Addr)
 {
   return MmioRead32(Addr);
 }
 
+inline
 VOID Write32(UINT32 Addr, UINT32 Val)
 {
   MmioWrite32(Addr, Val);
@@ -106,13 +108,14 @@ VOID I2c_Hw_Init(VOID)
 {
   INTN i;
   UINT32 Base, Param;
-
+  DBG("Calling I2c_Hw_Init\n");
   for (i = 0; i < CONFIG_SYS_MAX_I2C_BUS; i++) {
     Base = Dw_I2c[i].Base;
     Dw_I2c[i].Bus_Endian = DW_LE_BUS;
     Param = Read32(Base + DW_IC_COMP_PARAM_1);
     Dw_I2c[i].Rx_Buffer = ((Param >> 8) & 0xff) + 1;
     Dw_I2c[i].Tx_Buffer = ((Param >> 16) & 0xff) + 1;
+    DBG("I2c_Hw_Init: Bus:%d Rx_Buffer:%d Tx_Buffer:%d\n", i, Dw_I2c[i].Rx_Buffer, Dw_I2c[i].Tx_Buffer);
   }
   I2c_Hw_Init_Done = 1;
 }
@@ -352,20 +355,13 @@ VOID I2c_Init(INTN Speed, INTN Slaveadd)
   UINT16 Ic_Con;
   UINT32 I2c_Clk_Freq = CONFIG_I2C_CLK_FREQ;
 
-#ifdef CONFIG_SYS_I2C_INIT_BOARD
-  /* call board specific i2c bus reset routine before accessing the   */
-  /* environment, which might be in a Chip on that bus. For details   */
-  /* about this problem see doc/I2C_Edge_Conditions. */
-  I2c_Init_Board();
-#endif
-
+  DBG("Calling I2c_Init\n");
   if (!I2c_Hw_Init_Done)
    I2c_Hw_Init();
 
   Base = Sys_I2c_Base;
   if (I2c_Bus_Speed != Speed) {
     I2c_Bus_Speed = Speed;
-    I2c_Eeprom_Speed = Speed;
   }
 
   if (I2c_Bus_Num)
@@ -373,6 +369,9 @@ VOID I2c_Init(INTN Speed, INTN Slaveadd)
   else
     I2c_Poll_Time = ((10 * 1000000) / Speed) * (I2c_Clk_Freq / 50000000);
 
+  DBG("I2c_Init: Polling time:%d\n", I2c_Poll_Time);
+  DBG("I2c_Init: I2c_Bus_Speed:%x\n", I2c_Bus_Speed);
+  DBG("I2c_Init: Slaveadd:%d\n", Slaveadd);
   I2c_Status_Cnt = DW_STATUS_WAIT_RETRY;
   /* Disable the adapter and INTNerrupt */
   Write32(Base + DW_IC_ENABLE, 0);
@@ -450,6 +449,8 @@ EFI_STATUS __i2c_write(CHAR8 Chip, UINT32 Addr, INTN alen, CHAR8 *Data, INTN Len
   UINT32 Base = Sys_I2c_Base;
   UINT32 Temp;
 
+  DBG("i2c_write: chip:%d addr:%x alen:%d len:%d\n", Chip, Addr, alen, Length);
+  DBG("i2c_write: page_size:%d\n", Page_Size);
   if (I2c_Dw_Wait_Bus_Not_Busy(Base))
     return EFI_NOT_READY;
 
@@ -457,12 +458,12 @@ EFI_STATUS __i2c_write(CHAR8 Chip, UINT32 Addr, INTN alen, CHAR8 *Data, INTN Len
   if ((Addr % Page_Size) != 0) {
     Temp = (Length < (Page_Size - (Addr % Page_Size)))? Length : Page_Size - (Addr % Page_Size);
     for (i = 0; i < Temp; i++) {
-
       if (alen == 2)
         Write32(Base + DW_IC_DATA_CMD, (((Addr + i) >> 8) & 0xFF)); /* Write Addr */
-
       Write32(Base + DW_IC_DATA_CMD, ((Addr + i) & 0xFF)); /* Write Addr */
-      Write32(Base + DW_IC_DATA_CMD, Data[Offset + i]);
+      Write32(Base + DW_IC_DATA_CMD, Data[Offset + i] & 0xFF);
+      I2c_Sync();
+
       I2c_Dw_Wait_Bus_Not_Busy(Base);
       MicroSecondDelay(3000);
     }
@@ -473,16 +474,13 @@ EFI_STATUS __i2c_write(CHAR8 Chip, UINT32 Addr, INTN alen, CHAR8 *Data, INTN Len
 
 
   while (Length > (Page_Size - 1)) {
-
-    if (alen == 2) {
-      Write32(Base + DW_IC_DATA_CMD, ((Addr >> 8) & 0xFF)); /* Write Addr */
-    }
-
-    Write32(Base + DW_IC_DATA_CMD, (Addr & 0xFF)); /* Write Addr */
+    if (alen == 2)
+      Write32(Base + DW_IC_DATA_CMD, (((Addr) >> 8) & 0xFF)); /* Write Addr */
+    Write32(Base + DW_IC_DATA_CMD, ((Addr) & 0xFF)); /* Write Addr */
 
     for (i = 0; i < Page_Size; i++) {
-      Write32(Base + DW_IC_DATA_CMD, Data[Offset + i]);
-
+      Write32(Base + DW_IC_DATA_CMD, Data[Offset + i] & 0xFF);
+      I2c_Sync();
       if (EFI_ERROR(I2c_Dw_Wait_Tx_Data(Base)))
         return EFI_NOT_READY;
     }
@@ -498,9 +496,10 @@ EFI_STATUS __i2c_write(CHAR8 Chip, UINT32 Addr, INTN alen, CHAR8 *Data, INTN Len
   for (i = 0; i < Length; i++) {
     if (alen == 2)
       Write32(Base + DW_IC_DATA_CMD, (((Addr + i) >> 8) & 0xFF)); /*  Write Addr */
-
     Write32(Base + DW_IC_DATA_CMD, ((Addr + i) & 0xFF)); /* Write Addr */
-    Write32(Base + DW_IC_DATA_CMD, Data[Offset + i]);
+    Write32(Base + DW_IC_DATA_CMD, Data[Offset + i] & 0xFF);
+    I2c_Sync();
+
     I2c_Dw_Wait_Bus_Not_Busy(Base);
     MicroSecondDelay(3100);
   }
@@ -516,25 +515,24 @@ EFI_STATUS __i2c_read(CHAR8 Chip, UINT32 Addr, INTN alen, CHAR8 *Data, INTN Leng
   UINTN Rx_Fifo = I2c_Rx_Buffer;
   UINT32 I2c_Poll = I2c_Poll_Time;
   UINT32 Base = Sys_I2c_Base;
+  DBG("i2c_read: chip:%d addr:%x alen:%d len:%d\n", Chip, Addr, alen, Length);
 
   /* Added delay since it was giving "TX_ABORT" error everytime */
   MicroSecondDelay(3000);
   if (I2c_Dw_Wait_Bus_Not_Busy(Base))
     return EFI_NOT_READY;
 
-  I2c_Sync();
   DBG("Write: %d @ %x\n", Addr, Base + DW_IC_DATA_CMD);
 
   if (alen == 2)
     Write32(Base + DW_IC_DATA_CMD, ((Addr >> 8) & 0xFF)); /* Write Addr */
+  Write32(Base + DW_IC_DATA_CMD, (Addr & 0xFF)); /*Write Addr */
 
-  Write32(Base + DW_IC_DATA_CMD, ((Addr) & 0xFF)); /*Write Addr */
-
+  I2c_Sync();
   while (Offset < Length) {
     if (I2c_Dw_Wait_Bus_Not_Busy(Base))
       return EFI_NOT_READY;
 
-    I2c_Sync();
     if (I2c_Dw_Check_Errors(Base, alen)) {
       if (alen)
         DBG("writing Chip %02x register Offset %04x\n", Chip, Addr);
@@ -544,7 +542,6 @@ EFI_STATUS __i2c_read(CHAR8 Chip, UINT32 Addr, INTN alen, CHAR8 *Data, INTN Leng
     Count = (((Length - Offset) < Rx_Fifo) ? (Length - Offset) : Rx_Fifo);
     for (i = 0; i < Count; i++) {
       Write32(Base + DW_IC_DATA_CMD, 0x100); /*Read Command */
-
       I2c_Sync();
       if (I2c_Dw_Check_Errors(Base, alen)) {
         if (alen)
@@ -560,32 +557,25 @@ EFI_STATUS __i2c_read(CHAR8 Chip, UINT32 Addr, INTN alen, CHAR8 *Data, INTN Leng
     /* Extra delay required to read the 1st byte */
     if (Offset == 0)
       MicroSecondDelay(I2c_Poll * 6);
-
     /* Extra delay required when a byte is received in 1st FIFO buffer */
     MicroSecondDelay((I2c_Poll * 15) / 10);
 
     for (i = 0; i < Count; i++) {
-      I2c_Sync();
       if (I2c_Dw_Check_Errors(Base, alen)) {
         if (alen)
-          DBG("reading Chip %02x Data "
+          DBG("reading Chip %02x data "
             "Offset %04x start %04x Length %d\n",
             Chip, Offset + i, Addr, Length);
         return EFI_CRC_ERROR;
       }
-
-      /* Delay required to consecutive bytes received in FIFO */
       MicroSecondDelay((I2c_Poll * 25) / 10);
       Data[Offset + i] = Read32(Base + DW_IC_DATA_CMD);
+      I2c_Sync();
     }
 
     Offset += Count;
   }
 
-  I2c_Dw_Wait_Bus_Not_Busy(Base);
-
-  if (I2c_Dw_Check_Status(Base, alen))
-    return EFI_CRC_ERROR;
   return EFI_SUCCESS;
 }
 
@@ -632,11 +622,7 @@ EFI_STATUS I2c_Set_Bus_Num(UINTN Bus)
     return EFI_INVALID_PARAMETER;
 
   I2c_Bus_Num = Bus;
-#if defined(CONFIG_CMD_EEPROM)
-  I2c_Eeprom_Speed = I2c_Bus_Speed;
-  I2c_Eeprom_Addr = I2c_Device_Addr;
-  I2c_Eeprom_Addr_Len = I2c_Device_Addr_Len;
-#endif
+
   return EFI_SUCCESS;
 
 }

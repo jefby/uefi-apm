@@ -384,7 +384,8 @@ NorFlashWriteBlocks (
   IN  NOR_FLASH_INSTANCE *Instance,
   IN  EFI_LBA           Lba,
   IN  UINTN             BufferSizeInBytes,
-  IN  VOID              *Buffer
+  IN  VOID              *Buffer,
+  IN  BOOLEAN           Erase
   );
 
 EFI_STATUS

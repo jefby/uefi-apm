@@ -847,7 +847,7 @@ NorFlashWriteBuffer (
   IN NOR_FLASH_INSTANCE     *Instance,
   IN UINTN                  TargetAddress,
   IN UINTN                  BufferSizeInBytes,
-  IN UINT8                  *Buffer
+  IN UINT32                 *Buffer
   )
 {
   EFI_STATUS            Status;
@@ -987,7 +987,8 @@ NorFlashWriteBlocks (
   IN NOR_FLASH_INSTANCE     *Instance,
   IN EFI_LBA                Lba,
   IN UINTN                  BufferSizeInBytes,
-  IN VOID                   *Buffer
+  IN VOID                   *Buffer,
+  IN BOOLEAN                Erase
   )
 {
   UINT32          *pWriteBuffer;
@@ -1108,7 +1109,8 @@ NorFlashWriteBlocks (
   IN NOR_FLASH_INSTANCE     *Instance,
   IN EFI_LBA                Lba,
   IN UINTN                  BufferSizeInBytes,
-  IN VOID                   *Buffer
+  IN VOID                   *Buffer,
+  IN BOOLEAN                Erase
   )
 {
   UINTN      X1, X2, X3;
@@ -1117,6 +1119,7 @@ NorFlashWriteBlocks (
   UINTN      base_offset;
   EFI_LBA    Lba1, Lba2, Lba3;
   UINT8     *Buffer1 = NULL, *Buffer2 =  NULL, *Buffer3 = NULL;
+  EFI_TPL    OriginalTPL;
 
   // if not initialized, initialize instance first
   if (!Instance->Initialized && Instance->Initialize) {
@@ -1197,6 +1200,9 @@ NorFlashWriteBlocks (
     DEBUG((DEBUG_BLKIO, "SDD: 1\n")); ASSERT(1);
   }
 
+  // Raise TPL to TPL_HIGH to stop anyone from interrupting us.
+  OriginalTPL = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+
   // Erase and write
   if (S1) {
     SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, CMDSET2_CMD_READ_ARRAY);
@@ -1221,6 +1227,9 @@ NorFlashWriteBlocks (
     SEND_NOR_COMMAND (Instance->DeviceBaseAddress, 0, CMDSET2_CMD_READ_ARRAY);
     DEBUG((DEBUG_BLKIO, "SDD: 3\n")); ASSERT(1);
   }
+
+  // Interruptions can resume.
+  gBS->RestoreTPL (OriginalTPL);
 
   return EFI_SUCCESS;
 }
@@ -1267,7 +1276,7 @@ NorFlashWriteMultipleBuffers (
     Next32KBoundary = ((DstPtr / SIZE_32KB) + 1) * SIZE_32KB;
     Incr = ((DstPtr + CMDSET2_MAX_BUFFER_SIZE_IN_BYTES <  Next32KBoundary) ? CMDSET2_MAX_BUFFER_SIZE_IN_BYTES : (Next32KBoundary - DstPtr));
 
-    Status = NorFlashWriteBuffer (Instance, DstPtr, Incr, pWriteBuffer);
+    Status = NorFlashWriteBuffer (Instance, DstPtr, Incr, (UINT32 *)pWriteBuffer);
     if (EFI_ERROR(Status)) {
       break;
     }
@@ -1331,10 +1340,12 @@ NorFlashWriteBlocks (
   IN NOR_FLASH_INSTANCE     *Instance,
   IN EFI_LBA                Lba,
   IN UINTN                  BufferSizeInBytes,
-  IN VOID                   *Buffer
+  IN VOID                   *Buffer,
+  IN BOOLEAN                Erase
   )
 {
   EFI_STATUS      Status = EFI_SUCCESS;
+  EFI_TPL         OriginalTPL;
   UINT32 Addr = Lba * Instance->Media.BlockSize + Instance->RegionBaseAddress;
 
   // if not initialized, initialize instance first
@@ -1356,8 +1367,24 @@ NorFlashWriteBlocks (
   if (BufferSizeInBytes == 0) {
     return EFI_BAD_BUFFER_SIZE;
   }
+
+  // Raise TPL to TPL_HIGH to stop anyone from interrupting us.
+  OriginalTPL = gBS->RaiseTPL (TPL_HIGH_LEVEL);
+  if (Erase) {
+    Status = NorFlashPlatformErase(Addr, BufferSizeInBytes);
+  }
+
+  if (EFI_ERROR(Status)) {
+    DEBUG((DEBUG_BLKIO, "NorFlashWriteBlocks: Erase error BufferSizeInBytes=0x%x Buffer:0x%p\n", BufferSizeInBytes, Buffer));
+    // Interruptions can resume.
+    gBS->RestoreTPL (OriginalTPL);
+    return Status;
+  }
+
   Status = NorFlashPlatformWrite(Addr, (VOID *)Buffer, BufferSizeInBytes);
   DEBUG((DEBUG_BLKIO, "NorFlashWriteBlocks: Exit BufferSizeInBytes=0x%x Buffer:0x%p\n", BufferSizeInBytes, Buffer));
+  // Interruptions can resume.
+  gBS->RestoreTPL (OriginalTPL);
   return Status;
 }
 

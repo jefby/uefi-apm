@@ -139,7 +139,7 @@ NOR_FLASH_DESCRIPTION mNorFlashDevices[NOR_FLASH_DEVICE_COUNT] = {
     APM_XGENE_NOR0_BASE,
     SIZE_32KB * 4,
     SIZE_32KB,
-    {0xE7223039, 0x5836, 0x41E1, 0xB5, 0x42, 0xD7, 0xEC, 0x73, 0x6C, 0x5E, 0x59}
+    {0x6C9CEEF0, 0xA406, 0x11E3, 0xA5, 0xE2, 0x08, 0x00, 0x20, 0x0C, 0x9A, 0x66}
   },
   { 
     APM_XGENE_NOR0_BASE,
@@ -153,7 +153,7 @@ NOR_FLASH_DESCRIPTION mNorFlashDevices[NOR_FLASH_DEVICE_COUNT] = {
     APM_XGENE_NOR0_BASE + SIZE_32KB * 4 + SIZE_128KB * 254,
     SIZE_32KB * 4,
     SIZE_32KB,
-    {0x1F15DA3C, 0x37FF, 0x4070, 0xB4, 0x71, 0xBB, 0x4A, 0xF1, 0x2A, 0x72, 0x4A}
+    {0xF40A3869, 0x92C4, 0x4275, 0x85, 0x01, 0x44, 0x91, 0xA1, 0xA2, 0x0C, 0x19}
   },
 };
 
@@ -186,12 +186,19 @@ NorFlashPlatformGetDevices (
 #include <Library/MemoryAllocationLib.h>
 #include <Library/SPIFlash.h>
 
-#define NOR_FLASH_DEVICE_COUNT 2
+#define NOR_FLASH_DEVICE_COUNT 3
 
 struct SPI_FLASH *Spi_Flash;
 EFI_EVENT  mSpiNorVirtualAddressChangeEvent = NULL;
 
 NOR_FLASH_DESCRIPTION mNorFlashDevices[NOR_FLASH_DEVICE_COUNT] = {
+  {
+    0,
+    0x0,
+    SIZE_128KB * 64,
+    SIZE_128KB,
+    {0x6C9CEEF0, 0xA406, 0x11E3, 0xA5, 0xE2, 0x08, 0x00, 0x20, 0x0C, 0x9A, 0x66}
+  },
   {
     0,
     0x800000,

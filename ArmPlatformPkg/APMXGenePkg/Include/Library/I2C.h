@@ -27,6 +27,7 @@
 #define  CONFIG_SYS_I2C_SLAVE  0x52
 #endif
 
+#define CONFIG_SYS_EEPROM_PAGE_WRITE_BITS 8
 #define CONFIG_SYS_I2C_SPEED      100000  /* I2C speed */
 #define CONFIG_SYS_I2C_EEPROM_ADDR  0x51
 #define CONFIG_SYS_I2C_EEPROM_ADDR_LEN  1 /* Bytes of address */
