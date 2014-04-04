@@ -413,14 +413,17 @@ ShellAppMain (
    * Second argument must be text file contain checksum of the firmware
    */
   if (Argc != 2) {
-    PrintUsage(Argc, Argv);
-    goto EXIT;
-  }
-
-  Status = OpenFile(Argv[1], &FileHandle);
-  if (EFI_ERROR(Status)) {
-    ERROR("Failed to open file:%s\n", Argv[1]);
-    goto EXIT;
+    Status = OpenFile(L"apm_upgrade.cmd", &FileHandle);
+    if (EFI_ERROR(Status)) {
+      PrintUsage(Argc, Argv);
+      goto EXIT;
+    }
+  } else {
+    Status = OpenFile(Argv[1], &FileHandle);
+    if (EFI_ERROR(Status)) {
+      ERROR("Failed to open file:%s\n", Argv[1]);
+      goto EXIT;
+    }
   }
 
   ListCtx = AllocateZeroPool (sizeof(struct FirmwareCtx) * MAX_FIRMWARE_LIST);
